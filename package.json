@@ -2,8 +2,8 @@
   "name": "hono",
   "type": "module",
   "scripts": {
-    "dev": "vc dev",
-    "build": "vc build",
+    "local:dev": "vc dev",
+    "local:build": "vc build",
     "deploy": "vc deploy"
   },
   "dependencies": {
