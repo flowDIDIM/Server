@@ -3,6 +3,6 @@ import { Hono } from "hono";
 
 const scalarRoute = new Hono();
 
-scalarRoute.get("/", Scalar({ url: "/openapi" }));
+scalarRoute.get("/scalar", Scalar({ url: "/openapi" }));
 
 export default scalarRoute;

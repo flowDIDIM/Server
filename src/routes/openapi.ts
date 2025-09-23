@@ -5,7 +5,7 @@ export function makeOpenApiRoute(hono: Hono) {
   const route = new Hono();
 
   route.get(
-    "/",
+    "/openapi",
     openAPIRouteHandler(hono, {
       documentation: {
         info: {
