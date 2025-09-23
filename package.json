@@ -9,18 +9,31 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
-    "hono": "^4.9.8"
+    "@hono/standard-validator": "^0.1.5",
+    "@scalar/hono-api-reference": "^0.9.19",
+    "hono": "^4.9.8",
+    "hono-openapi": "^1.0.8",
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@hono/eslint-config": "^2.0.3",
     "@types/node": "^20.11.17",
+    "@vercel/node": "^5.3.24",
     "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-unused-imports": "^4.2.0",
     "prettier": "^3.6.2",
+    "ts-node": "^10.9.2",
     "tsx": "^4.7.1",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.44.0"
+    "typescript-eslint": "^8.44.0",
+    "vercel": "^48.1.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "@vercel/node>ts-node": "10.9.2",
+      "@vercel/node>typescript": "5.8.3"
+    }
   }
 }
