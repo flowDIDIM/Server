@@ -2,11 +2,10 @@
   "name": "hono",
   "type": "module",
   "scripts": {
-    "local:dev": "vc dev",
-    "local:build": "vc build",
-    "deploy": "vc deploy",
+    "start": "bun run src/app.ts",
     "format": "prettier --write .",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@hono/standard-validator": "^0.1.5",
@@ -16,24 +15,12 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^5.4.1",
     "@eslint/js": "^9.36.0",
-    "@hono/eslint-config": "^2.0.3",
-    "@types/node": "^20.11.17",
-    "@vercel/node": "^5.3.24",
+    "@types/bun": "^1.2.22",
     "eslint": "^9.36.0",
-    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-format": "^1.0.2",
     "eslint-plugin-unused-imports": "^4.2.0",
-    "prettier": "^3.6.2",
-    "ts-node": "^10.9.2",
-    "tsx": "^4.7.1",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.44.0",
-    "vercel": "^48.1.1"
-  },
-  "pnpm": {
-    "overrides": {
-      "@vercel/node>ts-node": "10.9.2",
-      "@vercel/node>typescript": "5.8.3"
-    }
+    "typescript": "^5.8.3"
   }
 }
