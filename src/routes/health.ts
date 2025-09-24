@@ -1,6 +1,6 @@
-import { Schema } from "effect";
 import { Hono } from "hono";
 import { describeRoute, resolver } from "hono-openapi";
+import { z } from "zod";
 
 const healthRoute = new Hono();
 
@@ -11,9 +11,9 @@ healthRoute.get("/health", describeRoute({
       description: "Successful response",
       content: {
         "text/plain": {
-          schema: resolver(Schema.standardSchemaV1(Schema.Struct({
-            status: Schema.String,
-          }))),
+          schema: resolver(z.object({
+            status: z.literal("ok"),
+          })),
         },
       },
     },
