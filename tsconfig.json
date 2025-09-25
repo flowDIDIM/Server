@@ -4,7 +4,7 @@
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "baseUrl": ".",
-    "module": "NodeNext",
+    "module": "ESNext",
     "moduleResolution": "bundler",
     "paths": {
       "@/*": ["src/*"]
