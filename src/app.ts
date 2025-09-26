@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import healthRoute from "@/routes/health";
 import { makeOpenApiRoute } from "@/routes/openapi";
 import scalarRoute from "@/routes/scalar";
+import "@/lib/env";
 
 const app = new Hono();
 
