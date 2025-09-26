@@ -1,8 +1,10 @@
 import { Hono } from "hono";
 import { openAPIRouteHandler } from "hono-openapi";
 
-export function makeOpenApiRoute(hono: Hono) {
-  const route = new Hono();
+import type { AppType } from "@/app";
+
+export function makeOpenApiRoute(hono: Hono<AppType>) {
+  const route = new Hono<AppType>();
 
   route.get(
     "/openapi",
