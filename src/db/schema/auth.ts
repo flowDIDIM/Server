@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export const user = sqliteTable("user", {
+export const userTable = sqliteTable("user", {
   id: text().primaryKey(),
   name: text().notNull(),
   email: text().notNull().unique(),
@@ -18,7 +18,7 @@ export const user = sqliteTable("user", {
     .notNull(),
 });
 
-export const session = sqliteTable("session", {
+export const sessionTable = sqliteTable("session", {
   id: text().primaryKey(),
   expiresAt: integer({ mode: "timestamp" }).notNull(),
   token: text().notNull().unique(),
@@ -32,16 +32,16 @@ export const session = sqliteTable("session", {
   userAgent: text(),
   userId: text()
     .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+    .references(() => userTable.id, { onDelete: "cascade" }),
 });
 
-export const account = sqliteTable("account", {
+export const accountTable = sqliteTable("account", {
   id: text().primaryKey(),
   accountId: text().notNull(),
   providerId: text().notNull(),
   userId: text()
     .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+    .references(() => userTable.id, { onDelete: "cascade" }),
   accessToken: text(),
   refreshToken: text(),
   idToken: text(),
@@ -61,7 +61,7 @@ export const account = sqliteTable("account", {
     .notNull(),
 });
 
-export const verification = sqliteTable("verification", {
+export const verificationTable = sqliteTable("verification", {
   id: text().primaryKey(),
   identifier: text().notNull(),
   value: text().notNull(),
