@@ -18,7 +18,7 @@ export const authMiddleware = createMiddleware<AppType>(async (c, next) => {
 });
 
 export const authCors = cors({
-  origin: "http://localhost:3001", // replace with your origin
+  origin: "http://localhost:3000",
   allowHeaders: ["Content-Type", "Authorization"],
   allowMethods: ["POST", "GET", "OPTIONS"],
   exposeHeaders: ["Content-Length"],

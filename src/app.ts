@@ -1,11 +1,8 @@
-import { Hono } from "hono";
-import { logger } from "hono/logger";
-
 import type { Session, User } from "@/lib/auth";
 
-import "@/lib/env";
 import { auth } from "@/lib/auth";
-import { authCors, authMiddleware } from "@/middleware/auth";
+import "@/lib/env";
+import { createApp } from "@/lib/create-app";
 import healthRoute from "@/routes/health";
 import { makeOpenApiRoute } from "@/routes/openapi";
 import scalarRoute from "@/routes/scalar";
@@ -17,15 +14,7 @@ export interface AppType {
   };
 }
 
-const app = new Hono<AppType>();
-
-app.use(logger());
-app.use("*", authMiddleware);
-app.use(
-  "/api/auth/*",
-  authCors,
-);
-
+const app = createApp();
 app.route("/", healthRoute);
 app.route("/", scalarRoute);
 app.route("/", makeOpenApiRoute(app));
