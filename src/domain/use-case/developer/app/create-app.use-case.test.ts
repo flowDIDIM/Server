@@ -36,13 +36,14 @@ describe("createAppUseCase", async () => {
       createAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
     );
 
-    expect(result).toBeDefined();
-    expect(result.packageName).toBe(input.packageName);
-    expect(result.name).toBe(input.title);
-    expect(result.shortDescription).toBe(input.shortDescription);
-    expect(result.fullDescription).toBe(input.fullDescription);
-    expect(result.icon).toBe(input.icon);
-    expect(result.trackName).toBe(input.trackName);
+    expect(result).toMatchObject({
+      packageName: input.packageName,
+      name: input.title,
+      shortDescription: input.shortDescription,
+      fullDescription: input.fullDescription,
+      icon: input.icon,
+      trackName: input.trackName,
+    });
 
     const dbApp = await db.query.applicationTable.findFirst({
       where: eq(applicationTable.packageName, input.packageName),
@@ -50,9 +51,10 @@ describe("createAppUseCase", async () => {
     });
 
     expect(dbApp).toBeDefined();
-    expect(dbApp?.images).toHaveLength(2);
-    expect(dbApp?.images[0].url).toBe(input.images[0]);
-    expect(dbApp?.images[1].url).toBe(input.images[1]);
+    expect(dbApp?.images).toMatchObject([
+      { url: input.images[0] },
+      { url: input.images[1] },
+    ]);
   });
 
   it("이미지 없이 앱을 생성한다", async () => {

@@ -50,11 +50,19 @@ describe("getAppsUseCase", () => {
       getAppsUseCase(developerId).pipe(Effect.provideService(DatabaseService, db)),
     );
 
-    expect(result).toHaveLength(2);
-    expect(result[0].name).toBe("App 1");
-    expect(result[0].images).toHaveLength(1);
-    expect(result[1].name).toBe("App 2");
-    expect(result[1].images).toHaveLength(2);
+    expect(result).toMatchObject([
+      {
+        name: "App 1",
+        images: [{ url: "https://example.com/image1.png" }],
+      },
+      {
+        name: "App 2",
+        images: [
+          { url: "https://example.com/image2.png" },
+          { url: "https://example.com/image3.png" },
+        ],
+      },
+    ]);
   });
 
   it("앱이 없는 개발자는 빈 배열을 반환한다", async () => {
@@ -82,7 +90,7 @@ describe("getAppsUseCase", () => {
     const otherUser = await usersFactory(db).create();
 
     await Effect.runPromise(
-      createAppUseCase({
+      createAppUseCase ({
         developerId: otherUser.id,
         packageName: "com.example.otherapp",
         trackName: "production",
@@ -98,7 +106,8 @@ describe("getAppsUseCase", () => {
       getAppsUseCase(developerId).pipe(Effect.provideService(DatabaseService, db)),
     );
 
-    expect(result).toHaveLength(1);
-    expect(result[0].name).toBe("My App");
+    expect(result).toMatchObject([
+      { name: "My App" },
+    ]);
   });
 });

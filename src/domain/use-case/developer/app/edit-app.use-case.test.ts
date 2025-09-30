@@ -35,18 +35,21 @@ describe("editAppUseCase", () => {
       editAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
     );
 
-    expect(result).toBeDefined();
-    expect(result.name).toBe(input.name);
-    expect(result.shortDescription).toBe(input.shortDescription);
-    expect(result.fullDescription).toBe(input.fullDescription);
+    expect(result).toMatchObject({
+      name: input.name,
+      shortDescription: input.shortDescription,
+      fullDescription: input.fullDescription,
+    });
 
     const dbApp = await db.query.applicationTable.findFirst({
       where: eq(applicationTable.id, applicationId),
     });
 
-    expect(dbApp?.name).toBe(input.name);
-    expect(dbApp?.shortDescription).toBe(input.shortDescription);
-    expect(dbApp?.fullDescription).toBe(input.fullDescription);
+    expect(dbApp).toMatchObject({
+      name: input.name,
+      shortDescription: input.shortDescription,
+      fullDescription: input.fullDescription,
+    });
   });
 
   it("앱 이미지를 수정한다", async () => {
@@ -66,9 +69,10 @@ describe("editAppUseCase", () => {
       with: { images: true },
     });
 
-    expect(dbApp?.images).toHaveLength(2);
-    expect(dbApp?.images[0].url).toBe(input.images[0]);
-    expect(dbApp?.images[1].url).toBe(input.images[1]);
+    expect(dbApp?.images).toMatchObject([
+      { url: input.images[0] },
+      { url: input.images[1] },
+    ]);
   });
 
   it("앱 이미지를 빈 배열로 수정하면 모든 이미지가 삭제된다", async () => {
