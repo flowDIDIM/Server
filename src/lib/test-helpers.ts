@@ -1,20 +1,15 @@
 import { defineFactory } from "@praha/drizzle-factory";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
-import * as fs from "node:fs/promises";
 
 import * as schema from "@/db/schema";
 
-export async function createTestDatabase(id: string) {
-  const db = drizzle(`file:db_${id}.db`, { schema, casing: "snake_case", logger: true });
+export async function createTestDatabase() {
+  const db = drizzle("file::memory:?cache=shared", { schema, casing: "snake_case", logger: true });
   await migrate(db, {
     migrationsFolder: "./drizzle",
   });
   return db;
-}
-
-export async function deleteDatabase(id: string) {
-  await fs.unlink(`db_${id}.db`);
 }
 
 export const tables = {

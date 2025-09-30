@@ -1,10 +1,10 @@
 import { Effect } from "effect";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Database } from "@/db";
 
 import { DatabaseService } from "@/db";
-import { createTestDatabase, deleteDatabase, usersFactory } from "@/lib/test-helpers";
+import { createTestDatabase, usersFactory } from "@/lib/test-helpers";
 
 import { createAppUseCase } from "./create-app.use-case";
 import { getAppsUseCase } from "./get-apps.use-case";
@@ -13,14 +13,10 @@ describe("getAppsUseCase", () => {
   let db: Database;
   let developerId: string;
 
-  beforeEach(async (ctx) => {
-    db = await createTestDatabase(ctx.task.id);
+  beforeEach(async () => {
+    db = await createTestDatabase();
     const user = await usersFactory(db).create();
     developerId = user.id;
-  });
-
-  afterEach(async (ctx) => {
-    await deleteDatabase(ctx.task.id);
   });
 
   it("개발자의 모든 앱을 조회한다", async () => {

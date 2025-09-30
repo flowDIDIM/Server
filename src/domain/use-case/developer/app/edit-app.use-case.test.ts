@@ -1,13 +1,13 @@
 import { eq } from "drizzle-orm";
 import { Effect } from "effect";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Database } from "@/db";
 import type { Application } from "@/db/schema/application";
 
 import { DatabaseService } from "@/db";
 import { applicationTable } from "@/db/schema/application";
-import { appFactory, appImageFactory, createTestDatabase, deleteDatabase } from "@/lib/test-helpers";
+import { appFactory, appImageFactory, createTestDatabase } from "@/lib/test-helpers";
 
 import { editAppUseCase } from "./edit-app.use-case";
 
@@ -16,15 +16,11 @@ describe("editAppUseCase", () => {
   let app: Application;
   let applicationId: string;
 
-  beforeEach(async (ctx) => {
-    db = await createTestDatabase(ctx.task.id);
+  beforeEach(async () => {
+    db = await createTestDatabase();
     app = await appFactory(db).create();
     await appImageFactory(db).create(3);
     applicationId = app.id;
-  });
-
-  afterEach(async (ctx) => {
-    await deleteDatabase(ctx.task.id);
   });
 
   it("앱 정보를 성공적으로 수정한다", async () => {

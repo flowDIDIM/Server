@@ -1,12 +1,12 @@
 import { eq } from "drizzle-orm";
 import { Effect } from "effect";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Database } from "@/db";
 
 import { DatabaseService } from "@/db";
 import { applicationTable } from "@/db/schema/application";
-import { createTestDatabase, deleteDatabase, usersFactory } from "@/lib/test-helpers";
+import { createTestDatabase, usersFactory } from "@/lib/test-helpers";
 
 import { createAppUseCase } from "./create-app.use-case";
 
@@ -14,14 +14,10 @@ describe("createAppUseCase", async () => {
   let db: Database;
   let developerId: string;
 
-  beforeEach(async (ctx) => {
-    db = await createTestDatabase(ctx.task.id);
+  beforeEach(async () => {
+    db = await createTestDatabase();
     const user = await usersFactory(db).create();
     developerId = user.id;
-  });
-
-  afterEach(async (ctx) => {
-    await deleteDatabase(ctx.task.id);
   });
 
   it("앱을 성공적으로 생성한다", async () => {
