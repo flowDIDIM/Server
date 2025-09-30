@@ -11,27 +11,25 @@ const ResponseSchema = Schema.Union(Schema.Struct({
   images: ImageSchema.pipe(Schema.Array),
 }), ErrorSchema);
 
-export function listImages(
+export const listImages = Effect.fn("listImages")(function* (
   packageName: string,
   editId: string,
   language: string,
   imageType: AppImageType,
 ) {
-  return Effect.gen(function* () {
-    const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/edits/${editId}/listings/${language}/${imageType}`;
-    const result = yield* HttpClient.get(url)
-      .pipe(Effect.andThen(HttpClientResponse.schemaBodyJson(ResponseSchema)));
+  const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/edits/${editId}/listings/${language}/${imageType}`;
+  const result = yield* HttpClient.get(url)
+    .pipe(Effect.andThen(HttpClientResponse.schemaBodyJson(ResponseSchema)));
 
-    if ("error" in result) {
-      return yield* new ListImagesError({
-        message: result.error.message,
-        cause: result.error,
-      });
-    }
+  if ("error" in result) {
+    return yield* new ListImagesError({
+      message: result.error.message,
+      cause: result.error,
+    });
+  }
 
-    return result;
-  });
-}
+  return result;
+});
 
 export class ListImagesError extends Data.TaggedError("ListImagesError")<{
   message: string;

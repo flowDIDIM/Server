@@ -7,22 +7,20 @@ import { ListingSchema } from "@/google/schema/listing";
 
 const ResponseSchema = Schema.Union(ListingSchema, ErrorSchema);
 
-export function getListing(packageName: string, editId: string, language: string) {
-  return Effect.gen(function* () {
-    const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/edits/${editId}/listings/${language}`;
-    const result = yield* HttpClient.get(url)
-      .pipe(Effect.andThen(HttpClientResponse.schemaBodyJson(ResponseSchema)));
+export const getListing = Effect.fn("getListing")(function* (packageName: string, editId: string, language: string) {
+  const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/edits/${editId}/listings/${language}`;
+  const result = yield* HttpClient.get(url)
+    .pipe(Effect.andThen(HttpClientResponse.schemaBodyJson(ResponseSchema)));
 
-    if ("error" in result) {
-      return yield* new GetListingError({
-        message: result.error.message,
-        cause: result.error,
-      });
-    }
+  if ("error" in result) {
+    return yield* new GetListingError({
+      message: result.error.message,
+      cause: result.error,
+    });
+  }
 
-    return result;
-  });
-}
+  return result;
+});
 
 export class GetListingError extends Data.TaggedError("GetListingError")<{
   message: string;
