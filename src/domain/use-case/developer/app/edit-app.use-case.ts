@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { Effect } from "effect";
 
 import { DatabaseService } from "@/db";
+import { DatabaseError } from "@/db/errors";
 import { applicationImageTable, applicationTable } from "@/db/schema/application";
 
 interface EditAppInput {
@@ -19,49 +20,47 @@ export const editAppUseCase = Effect.fn("editAppUseCase")(
     const db = yield* DatabaseService;
     const { applicationId, ...updateData } = input;
 
-    const existingApp = yield* Effect.tryPromise(() =>
-      db.query.applicationTable.findFirst({
-        where: eq(applicationTable.id, applicationId),
-      }),
-    );
+    return yield* Effect.tryPromise({
+      try: () =>
+        db.transaction(async (tx) => {
+          const existingApp = await tx.query.applicationTable.findFirst({
+            where: eq(applicationTable.id, applicationId),
+          });
 
-    if (!existingApp) {
-      return yield* Effect.fail(new Error("Application not found"));
-    }
+          if (!existingApp) {
+            throw new Error("Application not found");
+          }
 
-    const filteredUpdateData = Object.fromEntries(
-      Object.entries(updateData).filter(([_, value]) => value !== undefined),
-    );
+          const filteredUpdateData = Object.fromEntries(
+            Object.entries(updateData).filter(([_, value]) => value !== undefined),
+          );
 
-    if (Object.keys(filteredUpdateData).length === 0) {
-      return existingApp;
-    }
+          if (Object.keys(filteredUpdateData).length === 0) {
+            return existingApp;
+          }
 
-    const [updatedApp] = yield* Effect.tryPromise(() =>
-      db
-        .update(applicationTable)
-        .set(filteredUpdateData)
-        .where(eq(applicationTable.id, applicationId))
-        .returning(),
-    );
+          const [updatedApp] = await tx
+            .update(applicationTable)
+            .set(filteredUpdateData)
+            .where(eq(applicationTable.id, applicationId))
+            .returning();
 
-    if (input.images !== undefined) {
-      yield* Effect.tryPromise(() =>
-        db.delete(applicationImageTable).where(eq(applicationImageTable.applicationId, applicationId)),
-      );
+          if (input.images !== undefined) {
+            await tx.delete(applicationImageTable).where(eq(applicationImageTable.applicationId, applicationId));
 
-      if (input.images.length > 0) {
-        yield* Effect.tryPromise(() =>
-          db.insert(applicationImageTable).values(
-            input.images.map(url => ({
-              applicationId,
-              url,
-            })),
-          ),
-        );
-      }
-    }
+            if (input.images.length > 0) {
+              await tx.insert(applicationImageTable).values(
+                input.images.map(url => ({
+                  applicationId,
+                  url,
+                })),
+              );
+            }
+          }
 
-    return updatedApp;
+          return updatedApp;
+        }),
+      catch: error => new DatabaseError("Failed to edit application", error),
+    });
   },
 );

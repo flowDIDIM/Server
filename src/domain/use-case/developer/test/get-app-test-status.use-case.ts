@@ -2,6 +2,7 @@ import { and, eq, gte } from "drizzle-orm";
 import { Effect } from "effect";
 
 import { DatabaseService } from "@/db";
+import { DatabaseError } from "@/db/errors";
 import { appTestConfigTable, appTesterTable, testHistoryTable } from "@/db/schema/test";
 
 type TesterStatus = "completed" | "in_progress" | "not_installed" | "dropped";
@@ -29,74 +30,74 @@ export const getAppTestStatusUseCase = Effect.fn("getAppTestStatusUseCase")(
   function* (applicationId: string) {
     const db = yield* DatabaseService;
 
-    const testConfig = yield* Effect.tryPromise(() =>
-      db.query.appTestConfigTable.findFirst({
-        where: eq(appTestConfigTable.applicationId, applicationId),
-      }),
-    );
+    return yield* Effect.tryPromise({
+      try: () =>
+        db.transaction(async (tx) => {
+          const testConfig = await tx.query.appTestConfigTable.findFirst({
+            where: eq(appTestConfigTable.applicationId, applicationId),
+          });
 
-    const requiredDays = testConfig?.requiredDays ?? 14;
-    const requiredTesters = testConfig?.requiredTesters ?? 20;
-    const testStatus = testConfig?.status ?? "in_progress";
-    const startDate = testConfig?.startedAt ?? new Date();
+          const requiredDays = testConfig?.requiredDays ?? 14;
+          const requiredTesters = testConfig?.requiredTesters ?? 20;
+          const testStatus = testConfig?.status ?? "in_progress";
+          const startDate = testConfig?.startedAt ?? new Date();
 
-    const appTesters = yield* Effect.tryPromise(() =>
-      db.query.appTesterTable.findMany({
-        where: eq(appTesterTable.applicationId, applicationId),
-        with: {
-          tester: {
-            columns: {
-              id: true,
-              email: true,
-              name: true,
+          const appTesters = await tx.query.appTesterTable.findMany({
+            where: eq(appTesterTable.applicationId, applicationId),
+            with: {
+              tester: {
+                columns: {
+                  id: true,
+                  email: true,
+                  name: true,
+                },
+              },
             },
-          },
-        },
-      }),
-    );
+          });
 
-    const testHistories = yield* Effect.tryPromise(() =>
-      db.query.testHistoryTable.findMany({
-        where: and(
-          eq(testHistoryTable.applicationId, applicationId),
-          gte(testHistoryTable.testedAt, startDate),
-        ),
-        columns: {
-          testerId: true,
-          testedAt: true,
-        },
-      }),
-    );
+          const testHistories = await tx.query.testHistoryTable.findMany({
+            where: and(
+              eq(testHistoryTable.applicationId, applicationId),
+              gte(testHistoryTable.testedAt, startDate),
+            ),
+            columns: {
+              testerId: true,
+              testedAt: true,
+            },
+          });
 
-    const daysSinceStart = Math.floor(
-      (Date.now() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24),
-    );
+          const daysSinceStart = Math.floor(
+            (Date.now() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24),
+          );
 
-    const allRequiredDates = generateDateRange(startDate, requiredDays);
-    const testerHistoryMap = groupTestHistoriesByTester(testHistories);
+          const allRequiredDates = generateDateRange(startDate, requiredDays);
+          const testerHistoryMap = groupTestHistoriesByTester(testHistories);
 
-    const testers = appTesters.map(({ testerId, tester, status: testerStatus }) =>
-      createTesterInfo(
-        testerId,
-        tester,
-        testerStatus,
-        testerHistoryMap.get(testerId) ?? new Set(),
-        allRequiredDates,
-        daysSinceStart,
-        requiredDays,
-      ),
-    );
+          const testers = appTesters.map(({ testerId, tester, status: testerStatus }) =>
+            createTesterInfo(
+              testerId,
+              tester,
+              testerStatus,
+              testerHistoryMap.get(testerId) ?? new Set(),
+              allRequiredDates,
+              daysSinceStart,
+              requiredDays,
+            ),
+          );
 
-    const progressPercentage = calculateProgress(testers, requiredDays);
+          const progressPercentage = calculateProgress(testers, requiredDays);
 
-    return {
-      testStatus,
-      totalTesters: appTesters.length,
-      progressPercentage,
-      requiredDays,
-      requiredTesters,
-      testers,
-    } as AppTestStatus;
+          return {
+            testStatus,
+            totalTesters: appTesters.length,
+            progressPercentage,
+            requiredDays,
+            requiredTesters,
+            testers,
+          } as AppTestStatus;
+        }),
+      catch: error => new DatabaseError("Failed to get app test status", error),
+    });
   },
 );
 

@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { Effect } from "effect";
 
 import { DatabaseService } from "@/db";
+import { DatabaseError } from "@/db/errors";
 import { applicationImageTable, applicationTable } from "@/db/schema/application";
 
 interface CreateAppInput {
@@ -29,42 +30,42 @@ export const createAppUseCase = Effect.fn("createAppUseCase")(
       images,
     } = input;
 
-    const existingApp = yield* Effect.tryPromise(() =>
-      db.query.applicationTable.findFirst({
-        where: eq(applicationTable.packageName, packageName),
-      }),
-    );
+    return yield* Effect.tryPromise({
+      try: () =>
+        db.transaction(async (tx) => {
+          const existingApp = await tx.query.applicationTable.findFirst({
+            where: eq(applicationTable.packageName, packageName),
+          });
 
-    if (existingApp) {
-      return yield* Effect.fail(new Error("Application already exists"));
-    }
+          if (existingApp) {
+            throw new Error("Application already exists");
+          }
 
-    const [application] = yield* Effect.tryPromise(() =>
-      db
-        .insert(applicationTable)
-        .values({
-          developerId,
-          packageName,
-          trackName,
-          name: title,
-          shortDescription,
-          fullDescription,
-          icon,
-        })
-        .returning(),
-    );
+          const [application] = await tx
+            .insert(applicationTable)
+            .values({
+              developerId,
+              packageName,
+              trackName,
+              name: title,
+              shortDescription,
+              fullDescription,
+              icon,
+            })
+            .returning();
 
-    if (images.length > 0) {
-      yield* Effect.tryPromise(() =>
-        db.insert(applicationImageTable).values(
-          images.map(url => ({
-            applicationId: application.id,
-            url,
-          })),
-        ),
-      );
-    }
+          if (images.length > 0) {
+            await tx.insert(applicationImageTable).values(
+              images.map(url => ({
+                applicationId: application.id,
+                url,
+              })),
+            );
+          }
 
-    return application;
+          return application;
+        }),
+      catch: error => new DatabaseError("Failed to create application", error),
+    });
   },
 );
