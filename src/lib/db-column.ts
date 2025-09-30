@@ -6,13 +6,13 @@ export const textCuid = () => text().$defaultFn(() => createId());
 
 export function createdTimestamp() {
   return integer({ mode: "timestamp" })
-    .default(sql`CURRENT_TIMESTAMP`)
+    .default(sql`(unixepoch() * 1000)`)
     .notNull();
 }
 
 export function updatedTimestamp() {
   return integer({ mode: "timestamp" })
-    .default(sql`CURRENT_TIMESTAMP`)
+    .default(sql`(unixepoch() * 1000)`)
     .$onUpdate(() => new Date())
     .notNull();
 }
