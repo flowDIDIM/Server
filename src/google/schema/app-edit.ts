@@ -1,7 +1,9 @@
 import Schema from "effect/Schema";
 
+export const EditIdSchema = Schema.String.pipe(Schema.brand("EditId"));
+
 export const AppEditSchema = Schema.Struct({
-  id: Schema.String,
+  id: EditIdSchema,
   expiryTimeSeconds: Schema.String,
 });
 

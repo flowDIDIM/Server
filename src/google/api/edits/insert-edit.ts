@@ -2,7 +2,7 @@ import { HttpClient, HttpClientResponse } from "@effect/platform";
 import { Data, Effect } from "effect";
 import Schema from "effect/Schema";
 
-import { AppEditSchema } from "@/google/schema/app-edit";
+import { AppEditSchema, EditIdSchema } from "@/google/schema/app-edit";
 import { ErrorSchema } from "@/google/schema/error";
 
 const ResponseSchema = Schema.Union(AppEditSchema, ErrorSchema);
@@ -19,7 +19,7 @@ export function insertEdit(packageName: string) {
       });
     }
 
-    return result;
+    return EditIdSchema.make(result.id);
   });
 }
 
