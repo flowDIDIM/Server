@@ -3,7 +3,7 @@ import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { userTable } from "@/db/schema/auth";
-import { createdTimestamp, textCuid, updatedTimestamp } from "@/util/db-column";
+import { createdTimestamp, textCuid, updatedTimestamp } from "@/lib/db-column";
 
 export const applicationTable = sqliteTable("application", {
   id: textCuid().primaryKey(),

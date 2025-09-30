@@ -4,7 +4,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { applicationTable } from "@/db/schema/application";
 import { userTable } from "@/db/schema/auth";
-import { createdTimestamp, textCuid, updatedTimestamp } from "@/util/db-column";
+import { createdTimestamp, textCuid, updatedTimestamp } from "@/lib/db-column";
 
 export const paymentTable = sqliteTable("payment", {
   id: textCuid().primaryKey(),
