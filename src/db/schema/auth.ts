@@ -1,5 +1,6 @@
-import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+import { createdTimestamp, updatedTimestamp } from "@/util/db-column";
 
 export const userTable = sqliteTable("user", {
   id: text().primaryKey(),
@@ -9,30 +10,23 @@ export const userTable = sqliteTable("user", {
     .default(false)
     .notNull(),
   image: text(),
-  createdAt: integer({ mode: "timestamp" })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: integer({ mode: "timestamp" })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .$onUpdate(() => new Date())
-    .notNull(),
+
+  createdAt: createdTimestamp(),
+  updatedAt: updatedTimestamp(),
 });
 
 export const sessionTable = sqliteTable("session", {
   id: text().primaryKey(),
   expiresAt: integer({ mode: "timestamp" }).notNull(),
   token: text().notNull().unique(),
-  createdAt: integer({ mode: "timestamp" })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: integer({ mode: "timestamp" })
-    .$onUpdate(() => new Date())
-    .notNull(),
   ipAddress: text(),
   userAgent: text(),
   userId: text()
     .notNull()
     .references(() => userTable.id, { onDelete: "cascade" }),
+
+  createdAt: createdTimestamp(),
+  updatedAt: updatedTimestamp(),
 });
 
 export const accountTable = sqliteTable("account", {
@@ -53,12 +47,8 @@ export const accountTable = sqliteTable("account", {
   }),
   scope: text(),
   password: text(),
-  createdAt: integer({ mode: "timestamp" })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: integer({ mode: "timestamp" })
-    .$onUpdate(() => new Date())
-    .notNull(),
+  createdAt: createdTimestamp(),
+  updatedAt: updatedTimestamp(),
 });
 
 export const verificationTable = sqliteTable("verification", {
@@ -66,11 +56,6 @@ export const verificationTable = sqliteTable("verification", {
   identifier: text().notNull(),
   value: text().notNull(),
   expiresAt: integer({ mode: "timestamp" }).notNull(),
-  createdAt: integer({ mode: "timestamp" })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: integer({ mode: "timestamp" })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .$onUpdate(() => new Date())
-    .notNull(),
+  createdAt: createdTimestamp(),
+  updatedAt: updatedTimestamp(),
 });
