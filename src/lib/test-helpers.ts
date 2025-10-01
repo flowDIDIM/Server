@@ -40,8 +40,8 @@ export const usersFactory = defineFactory({
     email: `user${sequence}@example.com`,
     emailVerified: true,
     image: "",
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
   }),
 });
 
@@ -57,8 +57,8 @@ export const appFactory = defineFactory({
     icon: `https://example.com/icon-${sequence}.png`,
     packageName: `com.example.testapp-${sequence}`,
     trackName: "internal",
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
   }),
 });
 
@@ -69,7 +69,7 @@ export const appImageFactory = defineFactory({
     id: `test-app-image-id-${sequence}`,
     applicationId: () => use(appFactory).create().then(app => app.id),
     url: `https://example.com/image-${sequence}.png`,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
   }),
 });

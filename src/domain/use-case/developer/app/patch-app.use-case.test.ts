@@ -25,14 +25,13 @@ describe("editAppUseCase", () => {
 
   it("앱 정보를 성공적으로 수정한다", async () => {
     const input = {
-      applicationId,
       name: "Updated App",
       shortDescription: "Updated short description",
       fullDescription: "Updated full description",
     };
 
     const result = await Effect.runPromise(
-      patchAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
+      patchAppUseCase(applicationId, input).pipe(Effect.provideService(DatabaseService, db)),
     );
 
     expect(result).toMatchObject({
@@ -54,12 +53,11 @@ describe("editAppUseCase", () => {
 
   it("앱 이미지를 수정한다", async () => {
     const input = {
-      applicationId,
       images: ["https://example.com/new-image1.png", "https://example.com/new-image2.png"],
     };
 
     const result = await Effect.runPromise(
-      patchAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
+      patchAppUseCase(applicationId, input).pipe(Effect.provideService(DatabaseService, db)),
     );
 
     expect(result).toBeDefined();
@@ -77,12 +75,11 @@ describe("editAppUseCase", () => {
 
   it("앱 이미지를 빈 배열로 수정하면 모든 이미지가 삭제된다", async () => {
     const input = {
-      applicationId,
       images: [],
     };
 
     const result = await Effect.runPromise(
-      patchAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
+      patchAppUseCase(applicationId, input).pipe(Effect.provideService(DatabaseService, db)),
     );
 
     expect(result).toBeDefined();
@@ -96,12 +93,8 @@ describe("editAppUseCase", () => {
   });
 
   it("수정할 데이터가 없으면 원본 앱을 반환한다", async () => {
-    const input = {
-      applicationId,
-    };
-
     const result = await Effect.runPromise(
-      patchAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
+      patchAppUseCase(applicationId, {}).pipe(Effect.provideService(DatabaseService, db)),
     );
 
     expect(result).toBeDefined();
@@ -110,13 +103,12 @@ describe("editAppUseCase", () => {
 
   it("존재하지 않는 앱 수정시 에러를 발생시킨다", async () => {
     const input = {
-      applicationId: "non-existent-id",
       name: "Updated App",
     };
 
     await expect(
       Effect.runPromise(
-        patchAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
+        patchAppUseCase("non-exist-id", input).pipe(Effect.provideService(DatabaseService, db)),
       ),
     ).rejects.toThrow();
   });
