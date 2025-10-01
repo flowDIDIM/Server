@@ -91,7 +91,7 @@ export const purchaseGifticonUseCase = Effect.fn("purchaseGifticonUseCase")(
         return new DatabaseError("Failed to purchase gifticon", error);
       },
     });
-	
+
     return yield* effect;
   },
 );

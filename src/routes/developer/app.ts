@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { ApplicationSchema, NewApplicationSchema } from "@/db/schema";
 import { createAppUseCase } from "@/domain/use-case/developer/app/create-app.use-case";
+import { deleteAppUseCase } from "@/domain/use-case/developer/app/delete-app.use-case";
 import { getAppsUseCase } from "@/domain/use-case/developer/app/get-apps.use-case";
 import { patchAppUseCase } from "@/domain/use-case/developer/app/patch-app-use.case";
 import { createApp } from "@/lib/create-app";
@@ -123,6 +124,43 @@ appRoute.patch("/:id", describeRoute({
 
   if (Either.isLeft(result)) {
     return c.json({ message: "Failed to patch applications" }, 500);
+  }
+
+  return c.json(result.right);
+});
+
+appRoute.delete("/:id", describeRoute({
+  description: "앱을 삭제합니다.",
+  responses: {
+    200: {
+      description: "성공적으로 앱을 삭제함",
+      content: {
+        "application/json": {
+          schema: resolver(z.object({
+            success: z.boolean(),
+          })),
+        },
+      },
+    },
+    401: {
+      description: "인증 실패",
+    },
+    500: {
+      description: "서버 오류",
+    },
+  },
+}), async (c) => {
+  const user = c.get("user");
+  if (!user) {
+    return c.json({ message: "Unauthorized" }, 401);
+  }
+  const applicationId = c.req.param("id");
+
+  const result = await deleteAppUseCase(applicationId)
+    .pipe(Effect.either, runAsApp);
+
+  if (Either.isLeft(result)) {
+    return c.json({ message: "Failed to delete application" }, 500);
   }
 
   return c.json(result.right);
