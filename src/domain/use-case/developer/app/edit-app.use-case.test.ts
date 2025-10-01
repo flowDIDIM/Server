@@ -9,7 +9,7 @@ import { DatabaseService } from "@/db";
 import { applicationTable } from "@/db/schema/application";
 import { appFactory, appImageFactory, createTestDatabase } from "@/lib/test-helpers";
 
-import { editAppUseCase } from "./edit-app.use-case";
+import { patchAppUseCase } from "./patch-app-use.case";
 
 describe("editAppUseCase", () => {
   let db: Database;
@@ -32,7 +32,7 @@ describe("editAppUseCase", () => {
     };
 
     const result = await Effect.runPromise(
-      editAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
+      patchAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
     );
 
     expect(result).toMatchObject({
@@ -59,7 +59,7 @@ describe("editAppUseCase", () => {
     };
 
     const result = await Effect.runPromise(
-      editAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
+      patchAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
     );
 
     expect(result).toBeDefined();
@@ -82,7 +82,7 @@ describe("editAppUseCase", () => {
     };
 
     const result = await Effect.runPromise(
-      editAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
+      patchAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
     );
 
     expect(result).toBeDefined();
@@ -101,7 +101,7 @@ describe("editAppUseCase", () => {
     };
 
     const result = await Effect.runPromise(
-      editAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
+      patchAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
     );
 
     expect(result).toBeDefined();
@@ -116,7 +116,7 @@ describe("editAppUseCase", () => {
 
     await expect(
       Effect.runPromise(
-        editAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
+        patchAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
       ),
     ).rejects.toThrow();
   });

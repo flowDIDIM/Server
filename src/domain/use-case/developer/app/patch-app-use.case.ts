@@ -1,24 +1,15 @@
 import { eq } from "drizzle-orm";
 import { Effect } from "effect";
 
+import type { Application } from "@/db/schema/application";
+
 import { DatabaseService } from "@/db";
 import { DatabaseError } from "@/db/errors";
 import { applicationImageTable, applicationTable } from "@/db/schema/application";
 
-interface EditAppInput {
-  applicationId: string;
-  name?: string;
-  shortDescription?: string;
-  fullDescription?: string;
-  icon?: string;
-  trackName?: string;
-  images?: string[];
-}
-
-export const editAppUseCase = Effect.fn("editAppUseCase")(
-  function* (input: EditAppInput) {
+export const patchAppUseCase = Effect.fn("patchAppUseCase")(
+  function* (applicationId: string, input: Partial<Application & { images: string[] }>) {
     const db = yield* DatabaseService;
-    const { applicationId, ...updateData } = input;
 
     return yield* Effect.tryPromise({
       try: () =>
@@ -32,7 +23,7 @@ export const editAppUseCase = Effect.fn("editAppUseCase")(
           }
 
           const filteredUpdateData = Object.fromEntries(
-            Object.entries(updateData).filter(([_, value]) => value !== undefined),
+            Object.entries(input).filter(([key, value]) => key !== "id" && value !== undefined),
           );
 
           if (Object.keys(filteredUpdateData).length === 0) {

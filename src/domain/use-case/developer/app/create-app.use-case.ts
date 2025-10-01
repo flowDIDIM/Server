@@ -1,40 +1,21 @@
 import { eq } from "drizzle-orm";
 import { Effect } from "effect";
 
+import type { NewApplication } from "@/db/schema/application";
+
 import { DatabaseService } from "@/db";
 import { DatabaseError } from "@/db/errors";
 import { applicationImageTable, applicationTable } from "@/db/schema/application";
 
-interface CreateAppInput {
-  developerId: string;
-  packageName: string;
-  trackName: string;
-  title: string;
-  shortDescription: string;
-  fullDescription: string;
-  icon: string;
-  images: string[];
-}
-
 export const createAppUseCase = Effect.fn("createAppUseCase")(
-  function* (input: CreateAppInput) {
+  function* (input: NewApplication & { images: string[] }) {
     const db = yield* DatabaseService;
-    const {
-      developerId,
-      packageName,
-      trackName,
-      title,
-      shortDescription,
-      fullDescription,
-      icon,
-      images,
-    } = input;
 
     return yield* Effect.tryPromise({
       try: () =>
         db.transaction(async (tx) => {
           const existingApp = await tx.query.applicationTable.findFirst({
-            where: eq(applicationTable.packageName, packageName),
+            where: eq(applicationTable.packageName, input.packageName),
           });
 
           if (existingApp) {
@@ -43,20 +24,12 @@ export const createAppUseCase = Effect.fn("createAppUseCase")(
 
           const [application] = await tx
             .insert(applicationTable)
-            .values({
-              developerId,
-              packageName,
-              trackName,
-              name: title,
-              shortDescription,
-              fullDescription,
-              icon,
-            })
+            .values(input)
             .returning();
 
-          if (images.length > 0) {
+          if (input.images.length > 0) {
             await tx.insert(applicationImageTable).values(
-              images.map(url => ({
+              input.images.map(url => ({
                 applicationId: application.id,
                 url,
               })),

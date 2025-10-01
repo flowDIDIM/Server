@@ -5,14 +5,14 @@ import { integer, text } from "drizzle-orm/sqlite-core";
 export const textCuid = () => text().$defaultFn(() => createId());
 
 export function createdTimestamp() {
-  return integer({ mode: "timestamp" })
+  return integer()
     .default(sql`(unixepoch() * 1000)`)
     .notNull();
 }
 
 export function updatedTimestamp() {
-  return integer({ mode: "timestamp" })
+  return integer()
     .default(sql`(unixepoch() * 1000)`)
-    .$onUpdate(() => new Date())
+    .$onUpdate(() => Date.now())
     .notNull();
 }
