@@ -6,7 +6,7 @@ import { ApplicationSchema, NewApplicationSchema } from "@/db/schema";
 import { createAppUseCase } from "@/domain/use-case/developer/app/create-app.use-case";
 import { deleteAppUseCase } from "@/domain/use-case/developer/app/delete-app.use-case";
 import { getAppsUseCase } from "@/domain/use-case/developer/app/get-apps.use-case";
-import { patchAppUseCase } from "@/domain/use-case/developer/app/patch-app-use.case";
+import { patchAppUseCase } from "@/domain/use-case/developer/app/patch-app.use-case";
 import { createApp } from "@/lib/create-app";
 import { runAsApp } from "@/lib/runtime";
 

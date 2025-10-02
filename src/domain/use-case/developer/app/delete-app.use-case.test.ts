@@ -1,12 +1,13 @@
 import { eq } from "drizzle-orm";
-import { Effect } from "effect";
+import { Effect, Either } from "effect";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Database } from "@/db";
+import type { TestRuntime } from "@/lib/test-helpers";
 
-import { DatabaseService } from "@/db";
 import { applicationTable } from "@/db/schema/application";
-import { createTestDatabase, usersFactory } from "@/lib/test-helpers";
+import { NotFoundError } from "@/domain/error/not-found-error";
+import { createTestDatabase, createTestRuntime, usersFactory } from "@/lib/test-helpers";
 
 import { createAppUseCase } from "./create-app.use-case";
 import { deleteAppUseCase } from "./delete-app.use-case";
@@ -14,11 +15,13 @@ import { deleteAppUseCase } from "./delete-app.use-case";
 describe("deleteAppUseCase", async () => {
   let db: Database;
   let developerId: string;
+  let runtime: TestRuntime;
 
   beforeEach(async () => {
     db = await createTestDatabase();
     const user = await usersFactory(db).create();
     developerId = user.id;
+    runtime = createTestRuntime(db);
   });
 
   it("앱을 성공적으로 삭제한다", async () => {
@@ -33,13 +36,9 @@ describe("deleteAppUseCase", async () => {
       images: [],
     };
 
-    const createdApp = await Effect.runPromise(
-      createAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
-    );
+    const createdApp = await createAppUseCase(input).pipe(runtime.runPromise);
 
-    const result = await Effect.runPromise(
-      deleteAppUseCase(createdApp.id).pipe(Effect.provideService(DatabaseService, db)),
-    );
+    const result = await deleteAppUseCase(createdApp.id).pipe(runtime.runPromise);
 
     expect(result).toEqual({ success: true });
 
@@ -54,10 +53,8 @@ describe("deleteAppUseCase", async () => {
     const nonExistentId = "non-existent-id";
 
     await expect(
-      Effect.runPromise(
-        deleteAppUseCase(nonExistentId).pipe(Effect.provideService(DatabaseService, db)),
-      ),
-    ).rejects.toThrow();
+      deleteAppUseCase(nonExistentId).pipe(Effect.either, runtime.runPromise),
+    ).resolves.toEqual(Either.left(new NotFoundError("Application not found")));
   });
 
   it("앱 삭제시 관련 이미지도 함께 삭제된다", async () => {
@@ -72,9 +69,7 @@ describe("deleteAppUseCase", async () => {
       images: ["https://example.com/image1.png", "https://example.com/image2.png"],
     };
 
-    const createdApp = await Effect.runPromise(
-      createAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
-    );
+    const createdApp = await createAppUseCase(input).pipe(runtime.runPromise);
 
     const appWithImages = await db.query.applicationTable.findFirst({
       where: eq(applicationTable.id, createdApp.id),
@@ -83,9 +78,7 @@ describe("deleteAppUseCase", async () => {
 
     expect(appWithImages?.images).toHaveLength(2);
 
-    await Effect.runPromise(
-      deleteAppUseCase(createdApp.id).pipe(Effect.provideService(DatabaseService, db)),
-    );
+    await deleteAppUseCase(createdApp.id).pipe(runtime.runPromise);
 
     const deletedAppWithImages = await db.query.applicationTable.findFirst({
       where: eq(applicationTable.id, createdApp.id),

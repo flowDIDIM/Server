@@ -1,23 +1,26 @@
 import { eq } from "drizzle-orm";
-import { Effect } from "effect";
+import { Effect, Either } from "effect";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Database } from "@/db";
+import type { TestRuntime } from "@/lib/test-helpers";
 
-import { DatabaseService } from "@/db";
 import { applicationTable } from "@/db/schema/application";
-import { createTestDatabase, usersFactory } from "@/lib/test-helpers";
+import { ConflictError } from "@/domain/error/conflict-error";
+import { createTestDatabase, createTestRuntime, usersFactory } from "@/lib/test-helpers";
 
 import { createAppUseCase } from "./create-app.use-case";
 
 describe("createAppUseCase", async () => {
   let db: Database;
   let developerId: string;
+  let runtime: TestRuntime;
 
   beforeEach(async () => {
     db = await createTestDatabase();
     const user = await usersFactory(db).create();
     developerId = user.id;
+    runtime = createTestRuntime(db);
   });
 
   it("앱을 성공적으로 생성한다", async () => {
@@ -32,9 +35,7 @@ describe("createAppUseCase", async () => {
       images: ["https://example.com/image1.png", "https://example.com/image2.png"],
     };
 
-    const result = await Effect.runPromise(
-      createAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
-    );
+    const result = await createAppUseCase(input).pipe(runtime.runPromise);
 
     expect(result).toMatchObject({
       packageName: input.packageName,
@@ -69,9 +70,7 @@ describe("createAppUseCase", async () => {
       images: [],
     };
 
-    const result = await Effect.runPromise(
-      createAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
-    );
+    const result = await createAppUseCase(input).pipe(runtime.runPromise);
 
     expect(result).toBeDefined();
 
@@ -96,9 +95,7 @@ describe("createAppUseCase", async () => {
       images: [],
     };
 
-    await Effect.runPromise(
-      createAppUseCase(input).pipe(Effect.provideService(DatabaseService, db)),
-    );
+    await createAppUseCase(input).pipe(runtime.runPromise);
 
     const duplicateInput = {
       ...input,
@@ -106,9 +103,7 @@ describe("createAppUseCase", async () => {
     };
 
     await expect(
-      Effect.runPromise(
-        createAppUseCase(duplicateInput).pipe(Effect.provideService(DatabaseService, db)),
-      ),
-    ).rejects.toThrow();
+      createAppUseCase(duplicateInput).pipe(Effect.either, runtime.runPromise),
+    ).resolves.toEqual(Either.left(new ConflictError("Application with this package name already exists")));
   });
 });

@@ -2,31 +2,30 @@ import { eq } from "drizzle-orm";
 import { Effect } from "effect";
 
 import { DatabaseService } from "@/db";
-import { DatabaseError } from "@/db/errors";
 import { applicationTable } from "@/db/schema/application";
+import { NotFoundError } from "@/domain/error/not-found-error";
+import { mapHttpError } from "@/lib/effect";
 
 export const deleteAppUseCase = Effect.fn("deleteAppUseCase")(
   function* (applicationId: string) {
     const db = yield* DatabaseService;
 
-    return yield* Effect.tryPromise({
-      try: () =>
-        db.transaction(async (tx) => {
-          const existingApp = await tx.query.applicationTable.findFirst({
-            where: eq(applicationTable.id, applicationId),
-          });
+    return yield* Effect.tryPromise(
+      () => db.transaction(async (tx) => {
+        const existingApp = await tx.query.applicationTable.findFirst({
+          where: eq(applicationTable.id, applicationId),
+        });
 
-          if (!existingApp) {
-            throw new Error("Application not found");
-          }
+        if (!existingApp) {
+          throw new NotFoundError("Application not found");
+        }
 
-          await tx
-            .delete(applicationTable)
-            .where(eq(applicationTable.id, applicationId));
+        await tx
+          .delete(applicationTable)
+          .where(eq(applicationTable.id, applicationId));
 
-          return { success: true };
-        }),
-      catch: error => new DatabaseError("Failed to delete application", error),
-    });
+        return { success: true };
+      }),
+    ).pipe(mapHttpError);
   },
 );

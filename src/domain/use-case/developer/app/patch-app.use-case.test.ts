@@ -1,26 +1,29 @@
 import { eq } from "drizzle-orm";
-import { Effect } from "effect";
+import { Effect, Either } from "effect";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Database } from "@/db";
 import type { Application } from "@/db/schema/application";
+import type { TestRuntime } from "@/lib/test-helpers";
 
-import { DatabaseService } from "@/db";
 import { applicationTable } from "@/db/schema/application";
-import { appFactory, appImageFactory, createTestDatabase } from "@/lib/test-helpers";
+import { NotFoundError } from "@/domain/error/not-found-error";
+import { appFactory, appImageFactory, createTestDatabase, createTestRuntime } from "@/lib/test-helpers";
 
-import { patchAppUseCase } from "./patch-app-use.case";
+import { patchAppUseCase } from "./patch-app.use-case";
 
 describe("editAppUseCase", () => {
   let db: Database;
   let app: Application;
   let applicationId: string;
+  let runtime: TestRuntime;
 
   beforeEach(async () => {
     db = await createTestDatabase();
     app = await appFactory(db).create();
     await appImageFactory(db).create(3);
     applicationId = app.id;
+    runtime = createTestRuntime(db);
   });
 
   it("앱 정보를 성공적으로 수정한다", async () => {
@@ -30,9 +33,7 @@ describe("editAppUseCase", () => {
       fullDescription: "Updated full description",
     };
 
-    const result = await Effect.runPromise(
-      patchAppUseCase(applicationId, input).pipe(Effect.provideService(DatabaseService, db)),
-    );
+    const result = await patchAppUseCase(applicationId, input).pipe(runtime.runPromise);
 
     expect(result).toMatchObject({
       name: input.name,
@@ -56,9 +57,7 @@ describe("editAppUseCase", () => {
       images: ["https://example.com/new-image1.png", "https://example.com/new-image2.png"],
     };
 
-    const result = await Effect.runPromise(
-      patchAppUseCase(applicationId, input).pipe(Effect.provideService(DatabaseService, db)),
-    );
+    const result = await patchAppUseCase(applicationId, input).pipe(runtime.runPromise);
 
     expect(result).toBeDefined();
 
@@ -78,9 +77,7 @@ describe("editAppUseCase", () => {
       images: [],
     };
 
-    const result = await Effect.runPromise(
-      patchAppUseCase(applicationId, input).pipe(Effect.provideService(DatabaseService, db)),
-    );
+    const result = await patchAppUseCase(applicationId, input).pipe(runtime.runPromise);
 
     expect(result).toBeDefined();
 
@@ -93,9 +90,7 @@ describe("editAppUseCase", () => {
   });
 
   it("수정할 데이터가 없으면 원본 앱을 반환한다", async () => {
-    const result = await Effect.runPromise(
-      patchAppUseCase(applicationId, {}).pipe(Effect.provideService(DatabaseService, db)),
-    );
+    const result = await patchAppUseCase(applicationId, {}).pipe(runtime.runPromise);
 
     expect(result).toBeDefined();
     expect(result.name).toBe(app.name);
@@ -107,9 +102,7 @@ describe("editAppUseCase", () => {
     };
 
     await expect(
-      Effect.runPromise(
-        patchAppUseCase("non-exist-id", input).pipe(Effect.provideService(DatabaseService, db)),
-      ),
-    ).rejects.toThrow();
+      patchAppUseCase("non-exist-id", input).pipe(Effect.either, runtime.runPromise),
+    ).resolves.toEqual(Either.left(new NotFoundError("Application not found")));
   });
 });

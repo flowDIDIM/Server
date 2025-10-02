@@ -4,41 +4,40 @@ import { Effect } from "effect";
 import type { NewApplication } from "@/db/schema/application";
 
 import { DatabaseService } from "@/db";
-import { DatabaseError } from "@/db/errors";
 import { applicationImageTable, applicationTable } from "@/db/schema/application";
+import { ConflictError } from "@/domain/error/conflict-error";
+import { mapHttpError } from "@/lib/effect";
 
 export const createAppUseCase = Effect.fn("createAppUseCase")(
   function* (input: NewApplication & { images: string[] }) {
     const db = yield* DatabaseService;
 
-    return yield* Effect.tryPromise({
-      try: () =>
-        db.transaction(async (tx) => {
-          const existingApp = await tx.query.applicationTable.findFirst({
-            where: eq(applicationTable.packageName, input.packageName),
-          });
+    return yield* Effect.tryPromise(
+      () => db.transaction(async (tx) => {
+        const existingApp = await tx.query.applicationTable.findFirst({
+          where: eq(applicationTable.packageName, input.packageName),
+        });
 
-          if (existingApp) {
-            throw new Error("Application already exists");
-          }
+        if (existingApp) {
+          throw new ConflictError("Application with this package name already exists");
+        }
 
-          const [application] = await tx
-            .insert(applicationTable)
-            .values(input)
-            .returning();
+        const [application] = await tx
+          .insert(applicationTable)
+          .values(input)
+          .returning();
 
-          if (input.images.length > 0) {
-            await tx.insert(applicationImageTable).values(
-              input.images.map(url => ({
-                applicationId: application.id,
-                url,
-              })),
-            );
-          }
+        if (input.images.length > 0) {
+          await tx.insert(applicationImageTable).values(
+            input.images.map(url => ({
+              applicationId: application.id,
+              url,
+            })),
+          );
+        }
 
-          return application;
-        }),
-      catch: error => new DatabaseError("Failed to create application", error),
-    });
+        return application;
+      }),
+    ).pipe(mapHttpError);
   },
 );

@@ -1,16 +1,27 @@
 import { defineFactory } from "@praha/drizzle-factory";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
+import { Layer, ManagedRuntime } from "effect";
 
+import type { Database } from "@/db";
+
+import { DatabaseService } from "@/db";
 import * as schema from "@/db/schema";
 
 export async function createTestDatabase() {
-  const db = drizzle("file::memory:?cache=shared", { schema, casing: "snake_case", logger: true });
+  const db = drizzle("file::memory:?cache=shared", { schema, casing: "snake_case" });
   await migrate(db, {
     migrationsFolder: "./drizzle",
   });
   return db;
 }
+
+export function createTestRuntime(db: Database) {
+  const testLayer = Layer.succeed(DatabaseService, db);
+  return ManagedRuntime.make(testLayer);
+}
+
+export type TestRuntime = ReturnType<typeof createTestRuntime>;
 
 export const tables = {
   userTable: schema.userTable,
