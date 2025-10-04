@@ -6,10 +6,11 @@ import type { Application } from "@/db/schema/application";
 import { DatabaseService } from "@/db";
 import { applicationImageTable, applicationTable } from "@/db/schema/application";
 import { NotFoundError } from "@/domain/error/not-found-error";
+import { UnauthorizedError } from "@/domain/error/unauthorized-error";
 import { mapHttpError } from "@/lib/effect";
 
 export const patchAppUseCase = Effect.fn("patchAppUseCase")(
-  function* (applicationId: string, input: Partial<Application & { images: string[] }>) {
+  function* (applicationId: string, developerId: string, input: Partial<Application & { images: string[] }>) {
     const db = yield* DatabaseService;
 
     return yield* Effect.tryPromise(
@@ -20,6 +21,10 @@ export const patchAppUseCase = Effect.fn("patchAppUseCase")(
 
         if (!existingApp) {
           throw new NotFoundError("Application not found");
+        }
+
+        if (existingApp.developerId !== developerId) {
+          throw new UnauthorizedError();
         }
 
         const filteredUpdateData = Object.fromEntries(

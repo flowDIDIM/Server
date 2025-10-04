@@ -119,7 +119,7 @@ appRoute.patch("/:id", describeRoute({
   const applicationId = c.req.param("id");
   const input = c.req.valid("json");
 
-  const result = await patchAppUseCase(applicationId, input)
+  const result = await patchAppUseCase(applicationId, user.id, input)
     .pipe(Effect.either, runAsApp);
 
   if (Either.isLeft(result)) {
@@ -156,7 +156,7 @@ appRoute.delete("/:id", describeRoute({
   }
   const applicationId = c.req.param("id");
 
-  const result = await deleteAppUseCase(applicationId)
+  const result = await deleteAppUseCase(applicationId, user.id)
     .pipe(Effect.either, runAsApp);
 
   if (Either.isLeft(result)) {

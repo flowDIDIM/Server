@@ -7,6 +7,7 @@ import type { TestRuntime } from "@/lib/test-helpers";
 
 import { applicationTable } from "@/db/schema/application";
 import { NotFoundError } from "@/domain/error/not-found-error";
+import { UnauthorizedError } from "@/domain/error/unauthorized-error";
 import { createTestDatabase, createTestRuntime, usersFactory } from "@/lib/test-helpers";
 
 import { createAppUseCase } from "./create-app.use-case";
@@ -38,7 +39,7 @@ describe("deleteAppUseCase", async () => {
 
     const createdApp = await createAppUseCase(input).pipe(runtime.runPromise);
 
-    const result = await deleteAppUseCase(createdApp.id).pipe(runtime.runPromise);
+    const result = await deleteAppUseCase(createdApp.id, developerId).pipe(runtime.runPromise);
 
     expect(result).toEqual({ success: true });
 
@@ -53,7 +54,7 @@ describe("deleteAppUseCase", async () => {
     const nonExistentId = "non-existent-id";
 
     await expect(
-      deleteAppUseCase(nonExistentId).pipe(Effect.either, runtime.runPromise),
+      deleteAppUseCase(nonExistentId, developerId).pipe(Effect.either, runtime.runPromise),
     ).resolves.toEqual(Either.left(new NotFoundError("Application not found")));
   });
 
@@ -78,7 +79,7 @@ describe("deleteAppUseCase", async () => {
 
     expect(appWithImages?.images).toHaveLength(2);
 
-    await deleteAppUseCase(createdApp.id).pipe(runtime.runPromise);
+    await deleteAppUseCase(createdApp.id, developerId).pipe(runtime.runPromise);
 
     const deletedAppWithImages = await db.query.applicationTable.findFirst({
       where: eq(applicationTable.id, createdApp.id),
@@ -86,5 +87,26 @@ describe("deleteAppUseCase", async () => {
     });
 
     expect(deletedAppWithImages).toBeUndefined();
+  });
+
+  it("다른 개발자의 앱 삭제시 에러를 발생시킨다", async () => {
+    const input = {
+      developerId,
+      packageName: "com.example.otherapp",
+      trackName: "internal",
+      name: "Other App",
+      shortDescription: "Short description",
+      fullDescription: "Full description",
+      icon: "https://example.com/icon.png",
+      images: [],
+    };
+
+    const createdApp = await createAppUseCase(input).pipe(runtime.runPromise);
+
+    const otherUser = await usersFactory(db).create();
+
+    await expect(
+      deleteAppUseCase(createdApp.id, otherUser.id).pipe(Effect.either, runtime.runPromise),
+    ).resolves.toEqual(Either.left(new UnauthorizedError()));
   });
 });
