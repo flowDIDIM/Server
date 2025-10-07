@@ -35,7 +35,7 @@ export const tables = {
   gifticonProductTable: schema.gifticonProductTable,
   gifticonPurchaseTable: schema.gifticonPurchaseTable,
 
-  paymentTable: schema.paymentTable,
+  paymentTable: schema.paymentHistoryTable,
 
   userPointTable: schema.userPointTable,
   pointHistoryTable: schema.pointHistoryTable,
@@ -74,6 +74,7 @@ export const appFactory = defineFactory({
     icon: `https://example.com/icon-${sequence}.png`,
     packageName: `com.example.testapp-${sequence}`,
     trackName: "internal",
+    paymentState: "결제완료",
     createdAt: Date.now(),
     updatedAt: Date.now(),
   }),

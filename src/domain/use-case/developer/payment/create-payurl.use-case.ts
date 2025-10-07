@@ -9,11 +9,10 @@ import { createAppUseCase } from "@/domain/use-case/developer/app/create-app.use
 import { z } from "zod";
 
 export const CreatePayUrlUseCaseInputSchema = z.object({
-  application: NewApplicationWithImageSchema,
-  payment: z.object({
-    phoneNumber: z.string(),
-    amount: z.number(),
-  }),
+  applicationId: z.string(),
+  developerId: z.string(),
+  phoneNumber: z.string(),
+  amount: z.number(),
 });
 
 export type CreatePayUrlUseCaseInput = z.infer<
@@ -38,13 +37,9 @@ const ResponseSchema = Schema.Union(
 export const createPayUrlUseCase = Effect.fn("createPayUrlUseCase")(function* (
   input: CreatePayUrlUseCaseInput,
 ) {
-  const { application, payment } = input;
+  const { amount, applicationId, developerId, phoneNumber } = input;
 
-  const created = yield* createAppUseCase(application);
-  const developerId = created.developerId;
-  const applicationId = created.id;
-
-  if (payment.amount < env.MINIMUM_PAYMENT_AMOUNT) {
+  if (amount < env.MINIMUM_PAYMENT_AMOUNT) {
     return yield* new BadRequestError("최소 1만원 이상 결제해야 합니다.");
   }
 
@@ -55,8 +50,8 @@ export const createPayUrlUseCase = Effect.fn("createPayUrlUseCase")(function* (
         ["cmd", "payrequest"],
         ["userid", env.PAYAPP_USER_ID],
         ["goodname", "앱 등록"],
-        ["price", payment.amount.toString()],
-        ["recvphone", payment.phoneNumber],
+        ["price", amount.toString()],
+        ["recvphone", phoneNumber],
         ["smsuse", "n"],
         ["skip_cstpage", "y"],
         ["feedbackurl", `${env.SERVER_URL}/developer/payment/feedback`],

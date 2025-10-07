@@ -5,6 +5,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { userTable } from "@/db/schema/auth";
 import { createdTimestamp, textCuid, updatedTimestamp } from "@/lib/db-column";
 import { z } from "zod";
+import { PaymentStatusValueList } from "@/domain/schema/payment/payment-status";
 
 export const applicationTable = sqliteTable("application", {
   id: textCuid().primaryKey(),
@@ -19,9 +20,9 @@ export const applicationTable = sqliteTable("application", {
   packageName: text().notNull().unique(),
   trackName: text().notNull(),
 
-  paymentState: text({ enum: ["pending", "paid", "failed"] })
+  paymentState: text({ enum: PaymentStatusValueList })
     .notNull()
-    .default("pending"),
+    .default("요청"),
 
   createdAt: createdTimestamp(),
   updatedAt: updatedTimestamp(),
