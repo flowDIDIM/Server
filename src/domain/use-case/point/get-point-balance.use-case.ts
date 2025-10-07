@@ -11,7 +11,7 @@ export const getPointBalanceUseCase = Effect.fn("getPointBalanceUseCase")(
 
     return yield* Effect.tryPromise({
       try: () =>
-        db.transaction(async (tx) => {
+        db.transaction(async tx => {
           const userPoint = await tx.query.userPointTable.findFirst({
             where: eq(userPointTable.userId, userId),
           });

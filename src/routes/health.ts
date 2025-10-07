@@ -4,24 +4,30 @@ import { z } from "zod";
 
 const healthRoute = new Hono();
 
-healthRoute.get("/health", describeRoute({
-  description: "Check server is healthy",
-  responses: {
-    200: {
-      description: "Successful response",
-      content: {
-        "text/plain": {
-          schema: resolver(z.object({
-            status: z.literal("ok"),
-          })),
+healthRoute.get(
+  "/health",
+  describeRoute({
+    description: "Check server is healthy",
+    responses: {
+      200: {
+        description: "Successful response",
+        content: {
+          "text/plain": {
+            schema: resolver(
+              z.object({
+                status: z.literal("ok"),
+              }),
+            ),
+          },
         },
       },
     },
+  }),
+  c => {
+    return c.json({
+      status: "ok",
+    });
   },
-}), (c) => {
-  return c.json({
-    status: "ok",
-  });
-});
+);
 
 export default healthRoute;

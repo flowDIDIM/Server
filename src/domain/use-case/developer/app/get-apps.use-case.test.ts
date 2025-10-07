@@ -3,7 +3,11 @@ import { beforeEach, describe, expect, it } from "vitest";
 import type { Database } from "@/db";
 import type { TestRuntime } from "@/lib/test-helpers";
 
-import { createTestDatabase, createTestRuntime, usersFactory } from "@/lib/test-helpers";
+import {
+  createTestDatabase,
+  createTestRuntime,
+  usersFactory,
+} from "@/lib/test-helpers";
 
 import { createAppUseCase } from "./create-app.use-case";
 import { getAppsUseCase } from "./get-apps.use-case";
@@ -40,7 +44,10 @@ describe("getAppsUseCase", () => {
       shortDescription: "Short description 2",
       fullDescription: "Full description 2",
       icon: "https://example.com/icon2.png",
-      images: ["https://example.com/image2.png", "https://example.com/image3.png"],
+      images: [
+        "https://example.com/image2.png",
+        "https://example.com/image3.png",
+      ],
     }).pipe(runtime.runPromise);
 
     const result = await getAppsUseCase(developerId).pipe(runtime.runPromise);
@@ -93,8 +100,6 @@ describe("getAppsUseCase", () => {
 
     const result = await getAppsUseCase(developerId).pipe(runtime.runPromise);
 
-    expect(result).toMatchObject([
-      { name: "My App" },
-    ]);
+    expect(result).toMatchObject([{ name: "My App" }]);
   });
 });

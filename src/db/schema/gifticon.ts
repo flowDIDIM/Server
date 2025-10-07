@@ -28,7 +28,9 @@ export const gifticonPurchaseTable = sqliteTable("gifticon_purchase", {
     .references(() => gifticonProductTable.id, { onDelete: "cascade" }),
 
   price: integer().notNull(),
-  status: text({ enum: ["pending", "completed", "used"] }).notNull().default("pending"),
+  status: text({ enum: ["pending", "completed", "used"] })
+    .notNull()
+    .default("pending"),
   code: text(),
   expiresAt: integer({ mode: "timestamp" }),
 
@@ -43,22 +45,31 @@ export type GifticonPurchase = typeof gifticonPurchaseTable.$inferSelect;
 export type NewGifticonPurchase = typeof gifticonPurchaseTable.$inferInsert;
 
 export const GifticonProductSchema = createSelectSchema(gifticonProductTable);
-export const NewGifticonProductSchema = createInsertSchema(gifticonProductTable);
+export const NewGifticonProductSchema =
+  createInsertSchema(gifticonProductTable);
 
 export const GifticonPurchaseSchema = createSelectSchema(gifticonPurchaseTable);
-export const NewGifticonPurchaseSchema = createInsertSchema(gifticonPurchaseTable);
+export const NewGifticonPurchaseSchema = createInsertSchema(
+  gifticonPurchaseTable,
+);
 
-export const gifticonProductRelations = relations(gifticonProductTable, ({ many }) => ({
-  purchases: many(gifticonPurchaseTable),
-}));
+export const gifticonProductRelations = relations(
+  gifticonProductTable,
+  ({ many }) => ({
+    purchases: many(gifticonPurchaseTable),
+  }),
+);
 
-export const gifticonPurchaseRelations = relations(gifticonPurchaseTable, ({ one }) => ({
-  user: one(userTable, {
-    fields: [gifticonPurchaseTable.userId],
-    references: [userTable.id],
+export const gifticonPurchaseRelations = relations(
+  gifticonPurchaseTable,
+  ({ one }) => ({
+    user: one(userTable, {
+      fields: [gifticonPurchaseTable.userId],
+      references: [userTable.id],
+    }),
+    product: one(gifticonProductTable, {
+      fields: [gifticonPurchaseTable.productId],
+      references: [gifticonProductTable.id],
+    }),
   }),
-  product: one(gifticonProductTable, {
-    fields: [gifticonPurchaseTable.productId],
-    references: [gifticonProductTable.id],
-  }),
-}));
+);

@@ -7,8 +7,5 @@ export function createApp() {
   return new Hono()
     .use(logger())
     .use("*", authMiddleware)
-    .use(
-      "/api/auth/*",
-      authCors,
-    );
+    .use("/api/auth/*", authCors);
 }

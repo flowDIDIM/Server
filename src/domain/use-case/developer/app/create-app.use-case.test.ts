@@ -7,7 +7,11 @@ import type { TestRuntime } from "@/lib/test-helpers";
 
 import { applicationTable } from "@/db/schema/application";
 import { ConflictError } from "@/domain/error/conflict-error";
-import { createTestDatabase, createTestRuntime, usersFactory } from "@/lib/test-helpers";
+import {
+  createTestDatabase,
+  createTestRuntime,
+  usersFactory,
+} from "@/lib/test-helpers";
 
 import { createAppUseCase } from "./create-app.use-case";
 
@@ -32,7 +36,10 @@ describe("createAppUseCase", async () => {
       shortDescription: "Short description",
       fullDescription: "Full description",
       icon: "https://example.com/icon.png",
-      images: ["https://example.com/image1.png", "https://example.com/image2.png"],
+      images: [
+        "https://example.com/image1.png",
+        "https://example.com/image2.png",
+      ],
     };
 
     const result = await createAppUseCase(input).pipe(runtime.runPromise);
@@ -104,6 +111,10 @@ describe("createAppUseCase", async () => {
 
     await expect(
       createAppUseCase(duplicateInput).pipe(Effect.either, runtime.runPromise),
-    ).resolves.toEqual(Either.left(new ConflictError("Application with this package name already exists")));
+    ).resolves.toEqual(
+      Either.left(
+        new ConflictError("Application with this package name already exists"),
+      ),
+    );
   });
 });

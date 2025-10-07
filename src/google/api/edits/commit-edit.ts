@@ -13,8 +13,9 @@ export const commitEdit = Effect.fn("commitEdit")(function* (
   changesNotSentForReview: boolean = false,
 ) {
   const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/edits/${editId}:commit&changesNotSentForReview=${changesNotSentForReview}`;
-  const result = yield* HttpClient.post(url)
-    .pipe(Effect.andThen(HttpClientResponse.schemaBodyJson(ResponseSchema)));
+  const result = yield* HttpClient.post(url).pipe(
+    Effect.andThen(HttpClientResponse.schemaBodyJson(ResponseSchema)),
+  );
 
   if ("error" in result) {
     return yield* new CommitEditError({
@@ -29,5 +30,4 @@ export const commitEdit = Effect.fn("commitEdit")(function* (
 export class CommitEditError extends Data.TaggedError("CommitEditError")<{
   message: string;
   cause?: unknown;
-}> {
-}
+}> {}

@@ -7,9 +7,12 @@ export const ErrorSchema = Schema.Struct({
     status: Schema.String,
     details: Schema.Struct({
       "@type": Schema.String,
-      "reason": Schema.String.pipe(Schema.optional),
-      "domain": Schema.String.pipe(Schema.optional),
-      "metadata": Schema.Record({ key: Schema.String, value: Schema.String }).pipe(Schema.optional),
+      reason: Schema.String.pipe(Schema.optional),
+      domain: Schema.String.pipe(Schema.optional),
+      metadata: Schema.Record({
+        key: Schema.String,
+        value: Schema.String,
+      }).pipe(Schema.optional),
     }).pipe(Schema.Array, Schema.optional),
   }),
 });

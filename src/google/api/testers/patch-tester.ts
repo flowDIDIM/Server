@@ -33,5 +33,4 @@ export const patchTester = Effect.fn("patchTester")(function* (
 export class PatchTestersError extends Data.TaggedError("PatchTestersError")<{
   message: string;
   cause?: unknown;
-}> {
-}
+}> {}

@@ -10,44 +10,44 @@ interface JoinAppTestInput {
   testerId: string;
 }
 
-export const joinAppTestUseCase = Effect.fn("joinAppTestUseCase")(
-  function* (input: JoinAppTestInput) {
-    const db = yield* DatabaseService;
+export const joinAppTestUseCase = Effect.fn("joinAppTestUseCase")(function* (
+  input: JoinAppTestInput,
+) {
+  const db = yield* DatabaseService;
 
-    return yield* Effect.tryPromise({
-      try: () =>
-        db.transaction(async (tx) => {
-          const existingTester = await tx.query.appTesterTable.findFirst({
-            where: and(
-              eq(appTesterTable.applicationId, input.applicationId),
-              eq(appTesterTable.testerId, input.testerId),
-            ),
-          });
+  return yield* Effect.tryPromise({
+    try: () =>
+      db.transaction(async tx => {
+        const existingTester = await tx.query.appTesterTable.findFirst({
+          where: and(
+            eq(appTesterTable.applicationId, input.applicationId),
+            eq(appTesterTable.testerId, input.testerId),
+          ),
+        });
 
-          if (existingTester) {
-            if (existingTester.status === "dropped") {
-              const [updatedTester] = await tx
-                .update(appTesterTable)
-                .set({ status: "active" })
-                .where(eq(appTesterTable.id, existingTester.id))
-                .returning();
-              return updatedTester;
-            }
-            return existingTester;
+        if (existingTester) {
+          if (existingTester.status === "dropped") {
+            const [updatedTester] = await tx
+              .update(appTesterTable)
+              .set({ status: "active" })
+              .where(eq(appTesterTable.id, existingTester.id))
+              .returning();
+            return updatedTester;
           }
+          return existingTester;
+        }
 
-          const [appTester] = await tx
-            .insert(appTesterTable)
-            .values({
-              applicationId: input.applicationId,
-              testerId: input.testerId,
-              status: "active",
-            })
-            .returning();
+        const [appTester] = await tx
+          .insert(appTesterTable)
+          .values({
+            applicationId: input.applicationId,
+            testerId: input.testerId,
+            status: "active",
+          })
+          .returning();
 
-          return appTester;
-        }),
-      catch: error => new DatabaseError("Failed to join app test", error),
-    });
-  },
-);
+        return appTester;
+      }),
+    catch: error => new DatabaseError("Failed to join app test", error),
+  });
+});

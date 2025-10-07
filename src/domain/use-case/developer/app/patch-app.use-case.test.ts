@@ -9,7 +9,12 @@ import type { TestRuntime } from "@/lib/test-helpers";
 import { applicationTable } from "@/db/schema/application";
 import { NotFoundError } from "@/domain/error/not-found-error";
 import { UnauthorizedError } from "@/domain/error/unauthorized-error";
-import { appFactory, appImageFactory, createTestDatabase, createTestRuntime } from "@/lib/test-helpers";
+import {
+  appFactory,
+  appImageFactory,
+  createTestDatabase,
+  createTestRuntime,
+} from "@/lib/test-helpers";
 
 import { patchAppUseCase } from "./patch-app.use-case";
 
@@ -34,7 +39,11 @@ describe("editAppUseCase", () => {
       fullDescription: "Updated full description",
     };
 
-    const result = await patchAppUseCase(applicationId, app.developerId, input).pipe(runtime.runPromise);
+    const result = await patchAppUseCase(
+      applicationId,
+      app.developerId,
+      input,
+    ).pipe(runtime.runPromise);
 
     expect(result).toMatchObject({
       name: input.name,
@@ -55,10 +64,17 @@ describe("editAppUseCase", () => {
 
   it("앱 이미지를 수정한다", async () => {
     const input = {
-      images: ["https://example.com/new-image1.png", "https://example.com/new-image2.png"],
+      images: [
+        "https://example.com/new-image1.png",
+        "https://example.com/new-image2.png",
+      ],
     };
 
-    const result = await patchAppUseCase(applicationId, app.developerId, input).pipe(runtime.runPromise);
+    const result = await patchAppUseCase(
+      applicationId,
+      app.developerId,
+      input,
+    ).pipe(runtime.runPromise);
 
     expect(result).toBeDefined();
 
@@ -78,7 +94,11 @@ describe("editAppUseCase", () => {
       images: [],
     };
 
-    const result = await patchAppUseCase(applicationId, app.developerId, input).pipe(runtime.runPromise);
+    const result = await patchAppUseCase(
+      applicationId,
+      app.developerId,
+      input,
+    ).pipe(runtime.runPromise);
 
     expect(result).toBeDefined();
 
@@ -91,7 +111,11 @@ describe("editAppUseCase", () => {
   });
 
   it("수정할 데이터가 없으면 원본 앱을 반환한다", async () => {
-    const result = await patchAppUseCase(applicationId, app.developerId, {}).pipe(runtime.runPromise);
+    const result = await patchAppUseCase(
+      applicationId,
+      app.developerId,
+      {},
+    ).pipe(runtime.runPromise);
 
     expect(result).toBeDefined();
     expect(result.name).toBe(app.name);
@@ -103,7 +127,10 @@ describe("editAppUseCase", () => {
     };
 
     await expect(
-      patchAppUseCase("non-exist-id", app.developerId, input).pipe(Effect.either, runtime.runPromise),
+      patchAppUseCase("non-exist-id", app.developerId, input).pipe(
+        Effect.either,
+        runtime.runPromise,
+      ),
     ).resolves.toEqual(Either.left(new NotFoundError("Application not found")));
   });
 
@@ -115,7 +142,10 @@ describe("editAppUseCase", () => {
     const otherDeveloperId = "other-developer-id";
 
     await expect(
-      patchAppUseCase(applicationId, otherDeveloperId, input).pipe(Effect.either, runtime.runPromise),
+      patchAppUseCase(applicationId, otherDeveloperId, input).pipe(
+        Effect.either,
+        runtime.runPromise,
+      ),
     ).resolves.toEqual(Either.left(new UnauthorizedError()));
   });
 });

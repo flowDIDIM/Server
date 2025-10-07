@@ -11,7 +11,7 @@ export const getPointHistoryUseCase = Effect.fn("getPointHistoryUseCase")(
 
     return yield* Effect.tryPromise({
       try: () =>
-        db.transaction(async (tx) => {
+        db.transaction(async tx => {
           const histories = await tx.query.pointHistoryTable.findMany({
             where: eq(pointHistoryTable.userId, userId),
             orderBy: (history, { desc }) => [desc(history.createdAt)],

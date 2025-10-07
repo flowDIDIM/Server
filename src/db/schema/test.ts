@@ -15,7 +15,9 @@ export const appTesterTable = sqliteTable("app_tester", {
     .notNull()
     .references(() => userTable.id, { onDelete: "cascade" }),
 
-  status: text({ enum: ["active", "dropped"] }).notNull().default("active"),
+  status: text({ enum: ["active", "dropped"] })
+    .notNull()
+    .default("active"),
   createdAt: createdTimestamp(),
   updatedAt: updatedTimestamp(),
 });
@@ -41,7 +43,9 @@ export const appTestConfigTable = sqliteTable("app_test_config", {
     .references(() => applicationTable.id, { onDelete: "cascade" })
     .unique(),
 
-  status: text({ enum: ["in_progress", "completed"] }).notNull().default("in_progress"),
+  status: text({ enum: ["in_progress", "completed"] })
+    .notNull()
+    .default("in_progress"),
   requiredDays: integer().notNull().default(14),
   requiredTesters: integer().notNull().default(20),
   startedAt: createdTimestamp(),
@@ -90,9 +94,12 @@ export const testHistoryRelations = relations(testHistoryTable, ({ one }) => ({
   }),
 }));
 
-export const appTestConfigRelations = relations(appTestConfigTable, ({ one }) => ({
-  application: one(applicationTable, {
-    fields: [appTestConfigTable.applicationId],
-    references: [applicationTable.id],
+export const appTestConfigRelations = relations(
+  appTestConfigTable,
+  ({ one }) => ({
+    application: one(applicationTable, {
+      fields: [appTestConfigTable.applicationId],
+      references: [applicationTable.id],
+    }),
   }),
-}));
+);

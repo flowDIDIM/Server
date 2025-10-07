@@ -7,10 +7,15 @@ import { ListingSchema } from "@/google/schema/listing";
 
 const ResponseSchema = Schema.Union(ListingSchema, ErrorSchema);
 
-export const getListing = Effect.fn("getListing")(function* (packageName: string, editId: string, language: string) {
+export const getListing = Effect.fn("getListing")(function* (
+  packageName: string,
+  editId: string,
+  language: string,
+) {
   const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/edits/${editId}/listings/${language}`;
-  const result = yield* HttpClient.get(url)
-    .pipe(Effect.andThen(HttpClientResponse.schemaBodyJson(ResponseSchema)));
+  const result = yield* HttpClient.get(url).pipe(
+    Effect.andThen(HttpClientResponse.schemaBodyJson(ResponseSchema)),
+  );
 
   if ("error" in result) {
     return yield* new GetListingError({

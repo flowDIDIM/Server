@@ -9,7 +9,10 @@ import { DatabaseService } from "@/db";
 import * as schema from "@/db/schema";
 
 export async function createTestDatabase() {
-  const db = drizzle("file::memory:?cache=shared", { schema, casing: "snake_case" });
+  const db = drizzle("file::memory:?cache=shared", {
+    schema,
+    casing: "snake_case",
+  });
   await migrate(db, {
     migrationsFolder: "./drizzle",
   });
@@ -61,7 +64,10 @@ export const appFactory = defineFactory({
   table: "applicationTable",
   resolver: ({ sequence, use }) => ({
     id: `test-app-id-${sequence}`,
-    developerId: () => use(usersFactory).create().then(user => user.id),
+    developerId: () =>
+      use(usersFactory)
+        .create()
+        .then(user => user.id),
     name: `Test App ${sequence}`,
     shortDescription: `Short description ${sequence}`,
     fullDescription: `Full description ${sequence}`,
@@ -78,7 +84,10 @@ export const appImageFactory = defineFactory({
   table: "applicationImageTable",
   resolver: ({ sequence, use }) => ({
     id: `test-app-image-id-${sequence}`,
-    applicationId: () => use(appFactory).create().then(app => app.id),
+    applicationId: () =>
+      use(appFactory)
+        .create()
+        .then(app => app.id),
     url: `https://example.com/image-${sequence}.png`,
     createdAt: Date.now(),
     updatedAt: Date.now(),

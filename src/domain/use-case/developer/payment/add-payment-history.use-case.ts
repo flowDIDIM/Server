@@ -9,7 +9,7 @@ interface AddPaymentHistoryInput {
   developerId: string;
   amount: number;
   status: string;
-  paidAt?: Date;
+  paidAt?: number;
 }
 
 export const addPaymentHistoryUseCase = Effect.fn("addPaymentHistoryUseCase")(
@@ -18,7 +18,7 @@ export const addPaymentHistoryUseCase = Effect.fn("addPaymentHistoryUseCase")(
 
     return yield* Effect.tryPromise({
       try: () =>
-        db.transaction(async (tx) => {
+        db.transaction(async tx => {
           const [payment] = await tx
             .insert(paymentTable)
             .values({

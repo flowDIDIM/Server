@@ -3,7 +3,11 @@ import { Effect } from "effect";
 
 import { DatabaseService } from "@/db";
 import { DatabaseError } from "@/db/errors";
-import { appTestConfigTable, appTesterTable, testHistoryTable } from "@/db/schema/test";
+import {
+  appTestConfigTable,
+  appTesterTable,
+  testHistoryTable,
+} from "@/db/schema/test";
 
 type TesterStatus = "completed" | "in_progress" | "not_installed" | "dropped";
 
@@ -32,7 +36,7 @@ export const getAppTestStatusUseCase = Effect.fn("getAppTestStatusUseCase")(
 
     return yield* Effect.tryPromise({
       try: () =>
-        db.transaction(async (tx) => {
+        db.transaction(async tx => {
           const testConfig = await tx.query.appTestConfigTable.findFirst({
             where: eq(appTestConfigTable.applicationId, applicationId),
           });
@@ -67,22 +71,24 @@ export const getAppTestStatusUseCase = Effect.fn("getAppTestStatusUseCase")(
           });
 
           const daysSinceStart = Math.floor(
-            (Date.now() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24),
+            (Date.now() - new Date(startDate).getTime()) /
+              (1000 * 60 * 60 * 24),
           );
 
           const allRequiredDates = generateDateRange(startDate, requiredDays);
           const testerHistoryMap = groupTestHistoriesByTester(testHistories);
 
-          const testers = appTesters.map(({ testerId, tester, status: testerStatus }) =>
-            createTesterInfo(
-              testerId,
-              tester,
-              testerStatus,
-              testerHistoryMap.get(testerId) ?? new Set(),
-              allRequiredDates,
-              daysSinceStart,
-              requiredDays,
-            ),
+          const testers = appTesters.map(
+            ({ testerId, tester, status: testerStatus }) =>
+              createTesterInfo(
+                testerId,
+                tester,
+                testerStatus,
+                testerHistoryMap.get(testerId) ?? new Set(),
+                allRequiredDates,
+                daysSinceStart,
+                requiredDays,
+              ),
           );
 
           const progressPercentage = calculateProgress(testers, requiredDays);
@@ -174,12 +180,18 @@ function createTesterInfo(
   };
 }
 
-function calculateProgress(testers: TesterInfo[], requiredDays: number): number {
+function calculateProgress(
+  testers: TesterInfo[],
+  requiredDays: number,
+): number {
   const totalPossibleProgress = testers.length * requiredDays;
   if (totalPossibleProgress === 0) {
     return 0;
   }
 
-  const actualProgress = testers.reduce((sum, tester) => sum + tester.currentDay, 0);
+  const actualProgress = testers.reduce(
+    (sum, tester) => sum + tester.currentDay,
+    0,
+  );
   return Math.round((actualProgress / totalPossibleProgress) * 100);
 }

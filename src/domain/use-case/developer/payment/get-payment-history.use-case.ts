@@ -11,7 +11,7 @@ export const getPaymentHistoryUseCase = Effect.fn("getPaymentHistoryUseCase")(
 
     return yield* Effect.tryPromise({
       try: () =>
-        db.transaction(async (tx) => {
+        db.transaction(async tx => {
           const payments = await tx.query.paymentTable.findMany({
             where: eq(paymentTable.developerId, developerId),
             columns: {

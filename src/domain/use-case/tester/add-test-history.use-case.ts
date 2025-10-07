@@ -25,10 +25,18 @@ export const addTestHistoryUseCase = Effect.fn("addTestHistoryUseCase")(
 
     const result = yield* Effect.tryPromise({
       try: () =>
-        db.transaction(async (tx) => {
+        db.transaction(async tx => {
           const now = new Date();
-          const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+          const startOfDay = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+          );
+          const endOfDay = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate() + 1,
+          );
 
           const existingHistory = await tx
             .select()
@@ -87,7 +95,8 @@ export const addTestHistoryUseCase = Effect.fn("addTestHistoryUseCase")(
 
           return uniqueDates.size;
         },
-        catch: error => new DatabaseError("Failed to calculate completed days", error),
+        catch: error =>
+          new DatabaseError("Failed to calculate completed days", error),
       });
 
       const points = calculatePointsForDay(completedDay);

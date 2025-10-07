@@ -7,9 +7,12 @@ import type { AppImageType } from "@/google/schema/image";
 import { ErrorSchema } from "@/google/schema/error";
 import { ImageSchema } from "@/google/schema/image";
 
-const ResponseSchema = Schema.Union(Schema.Struct({
-  images: ImageSchema.pipe(Schema.Array),
-}), ErrorSchema);
+const ResponseSchema = Schema.Union(
+  Schema.Struct({
+    images: ImageSchema.pipe(Schema.Array),
+  }),
+  ErrorSchema,
+);
 
 export const listImages = Effect.fn("listImages")(function* (
   packageName: string,
@@ -18,8 +21,9 @@ export const listImages = Effect.fn("listImages")(function* (
   imageType: AppImageType,
 ) {
   const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/edits/${editId}/listings/${language}/${imageType}`;
-  const result = yield* HttpClient.get(url)
-    .pipe(Effect.andThen(HttpClientResponse.schemaBodyJson(ResponseSchema)));
+  const result = yield* HttpClient.get(url).pipe(
+    Effect.andThen(HttpClientResponse.schemaBodyJson(ResponseSchema)),
+  );
 
   if ("error" in result) {
     return yield* new ListImagesError({

@@ -10,33 +10,33 @@ interface LeaveAppTestInput {
   testerId: string;
 }
 
-export const leaveAppTestUseCase = Effect.fn("leaveAppTestUseCase")(
-  function* (input: LeaveAppTestInput) {
-    const db = yield* DatabaseService;
+export const leaveAppTestUseCase = Effect.fn("leaveAppTestUseCase")(function* (
+  input: LeaveAppTestInput,
+) {
+  const db = yield* DatabaseService;
 
-    return yield* Effect.tryPromise({
-      try: () =>
-        db.transaction(async (tx) => {
-          const existingTester = await tx.query.appTesterTable.findFirst({
-            where: and(
-              eq(appTesterTable.applicationId, input.applicationId),
-              eq(appTesterTable.testerId, input.testerId),
-            ),
-          });
+  return yield* Effect.tryPromise({
+    try: () =>
+      db.transaction(async tx => {
+        const existingTester = await tx.query.appTesterTable.findFirst({
+          where: and(
+            eq(appTesterTable.applicationId, input.applicationId),
+            eq(appTesterTable.testerId, input.testerId),
+          ),
+        });
 
-          if (!existingTester) {
-            throw new Error("Tester not found in this app");
-          }
+        if (!existingTester) {
+          throw new Error("Tester not found in this app");
+        }
 
-          const [updatedTester] = await tx
-            .update(appTesterTable)
-            .set({ status: "dropped" })
-            .where(eq(appTesterTable.id, existingTester.id))
-            .returning();
+        const [updatedTester] = await tx
+          .update(appTesterTable)
+          .set({ status: "dropped" })
+          .where(eq(appTesterTable.id, existingTester.id))
+          .returning();
 
-          return updatedTester;
-        }),
-      catch: error => new DatabaseError("Failed to leave app test", error),
-    });
-  },
-);
+        return updatedTester;
+      }),
+    catch: error => new DatabaseError("Failed to leave app test", error),
+  });
+});

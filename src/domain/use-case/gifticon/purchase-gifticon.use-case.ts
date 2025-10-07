@@ -3,7 +3,10 @@ import { Data, Effect } from "effect";
 
 import { DatabaseService } from "@/db";
 import { DatabaseError } from "@/db/errors";
-import { gifticonProductTable, gifticonPurchaseTable } from "@/db/schema/gifticon";
+import {
+  gifticonProductTable,
+  gifticonPurchaseTable,
+} from "@/db/schema/gifticon";
 import { pointHistoryTable, userPointTable } from "@/db/schema/point";
 
 interface PurchaseGifticonInput {
@@ -17,7 +20,7 @@ export const purchaseGifticonUseCase = Effect.fn("purchaseGifticonUseCase")(
 
     const effect = Effect.tryPromise({
       try: () =>
-        db.transaction(async (tx) => {
+        db.transaction(async tx => {
           const product = await tx.query.gifticonProductTable.findFirst({
             where: eq(gifticonProductTable.id, input.productId),
           });
@@ -69,7 +72,7 @@ export const purchaseGifticonUseCase = Effect.fn("purchaseGifticonUseCase")(
 
           return purchase;
         }),
-      catch: (error) => {
+      catch: error => {
         if (error instanceof InsufficientPointError) {
           return error;
         }
@@ -96,8 +99,18 @@ export const purchaseGifticonUseCase = Effect.fn("purchaseGifticonUseCase")(
   },
 );
 
-export class ProductNotFoundError extends Data.TaggedError("ProductNotFoundError") {}
-export class ProductNotAvailableError extends Data.TaggedError("ProductNotAvailableError") {}
-export class UserPointNotFoundError extends Data.TaggedError("UserPointNotFoundError") {}
-export class InsufficientPointError extends Data.TaggedError("InsufficientPointError") {}
-export class PurchaseGifticonError extends Data.TaggedError("PurchaseGifticonError") {}
+export class ProductNotFoundError extends Data.TaggedError(
+  "ProductNotFoundError",
+) {}
+export class ProductNotAvailableError extends Data.TaggedError(
+  "ProductNotAvailableError",
+) {}
+export class UserPointNotFoundError extends Data.TaggedError(
+  "UserPointNotFoundError",
+) {}
+export class InsufficientPointError extends Data.TaggedError(
+  "InsufficientPointError",
+) {}
+export class PurchaseGifticonError extends Data.TaggedError(
+  "PurchaseGifticonError",
+) {}

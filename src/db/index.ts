@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/libsql";
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 
 import { env } from "@/lib/env";
 
@@ -11,4 +11,9 @@ export const db = drizzle(env.DB_FILE_NAME, {
 });
 
 export type Database = typeof db;
-export class DatabaseService extends Effect.Tag("DatabaseService")<DatabaseService, Database>() {}
+export class DatabaseService extends Effect.Tag("DatabaseService")<
+  DatabaseService,
+  Database
+>() {}
+
+export const DatabaseLayer = Layer.succeed(DatabaseService, db);

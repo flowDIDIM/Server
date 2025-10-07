@@ -11,7 +11,7 @@ export const getMyGifticonsUseCase = Effect.fn("getMyGifticonsUseCase")(
 
     return yield* Effect.tryPromise({
       try: () =>
-        db.transaction(async (tx) => {
+        db.transaction(async tx => {
           const purchases = await tx.query.gifticonPurchaseTable.findMany({
             where: eq(gifticonPurchaseTable.userId, userId),
             with: {

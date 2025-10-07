@@ -17,7 +17,7 @@ export const createTestConfigUseCase = Effect.fn("createTestConfigUseCase")(
 
     return yield* Effect.tryPromise({
       try: () =>
-        db.transaction(async (tx) => {
+        db.transaction(async tx => {
           const existingConfig = await tx.query.appTestConfigTable.findFirst({
             where: eq(appTestConfigTable.applicationId, input.applicationId),
           });

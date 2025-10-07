@@ -10,19 +10,28 @@ export const getAppInformationUseCase = Effect.fn("getAppInformationUseCase")(
   function* (packageName: string, language: string = "ko-KR") {
     const editId = yield* EditsService.insert(packageName);
 
-    const { title, fullDescription, shortDescription } = yield* ListingService.get(packageName, editId, language);
-    const icon = yield* ImageService.list(packageName, editId, language, "icon").pipe(
-      Effect.flatMap(
-        res => res.images.length > 0
+    const { title, fullDescription, shortDescription } =
+      yield* ListingService.get(packageName, editId, language);
+    const icon = yield* ImageService.list(
+      packageName,
+      editId,
+      language,
+      "icon",
+    ).pipe(
+      Effect.flatMap(res =>
+        res.images.length > 0
           ? Effect.succeed(res.images[0])
           : Effect.fail(new ImageNotFoundError("icon")),
       ),
       Effect.andThen(image => image.url),
     );
 
-    const phoneScreenShots = yield* ImageService.list(packageName, editId, language, "phoneScreenshots").pipe(
-      Effect.andThen(res => res.images.map(image => image.url)),
-    );
+    const phoneScreenShots = yield* ImageService.list(
+      packageName,
+      editId,
+      language,
+      "phoneScreenshots",
+    ).pipe(Effect.andThen(res => res.images.map(image => image.url)));
 
     return {
       title,

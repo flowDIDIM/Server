@@ -5,18 +5,22 @@ import Schema from "effect/Schema";
 import { ErrorSchema } from "@/google/schema/error";
 import { TrackSchema } from "@/google/schema/track";
 
-const ResponseSchema = Schema.Union(Schema.Struct({
-  kind: Schema.String,
-  tracks: Schema.Array(TrackSchema),
-}), ErrorSchema);
+const ResponseSchema = Schema.Union(
+  Schema.Struct({
+    kind: Schema.String,
+    tracks: Schema.Array(TrackSchema),
+  }),
+  ErrorSchema,
+);
 
 export const listTracks = Effect.fn("listTracks")(function* (
   packageName: string,
   editId: string,
 ) {
   const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/edits/${editId}/tracks`;
-  const result = yield* HttpClient.get(url)
-    .pipe(Effect.andThen(HttpClientResponse.schemaBodyJson(ResponseSchema)));
+  const result = yield* HttpClient.get(url).pipe(
+    Effect.andThen(HttpClientResponse.schemaBodyJson(ResponseSchema)),
+  );
 
   if ("error" in result) {
     return yield* new ListTracksError({
@@ -31,5 +35,4 @@ export const listTracks = Effect.fn("listTracks")(function* (
 export class ListTracksError extends Data.TaggedError("ListTracksError")<{
   message: string;
   cause?: unknown;
-}> {
-}
+}> {}

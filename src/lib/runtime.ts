@@ -1,8 +1,12 @@
 import { Effect, Layer, ManagedRuntime } from "effect";
 
-import { DatabaseService, db } from "@/db";
+import { DatabaseLayer, DatabaseService, db } from "@/db";
+import { FetchHttpClient } from "@effect/platform";
 
-const AppLayer = Layer.succeed(DatabaseService, db);
+const AppLayer = Layer.empty.pipe(
+  Layer.provideMerge(DatabaseLayer),
+  Layer.provideMerge(FetchHttpClient.layer),
+);
 
 const appRuntime = ManagedRuntime.make(AppLayer);
 

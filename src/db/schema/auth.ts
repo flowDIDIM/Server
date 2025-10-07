@@ -6,9 +6,7 @@ export const userTable = sqliteTable("user", {
   id: text().primaryKey(),
   name: text().notNull(),
   email: text().notNull().unique(),
-  emailVerified: integer({ mode: "boolean" })
-    .default(false)
-    .notNull(),
+  emailVerified: integer({ mode: "boolean" }).default(false).notNull(),
   image: text(),
 
   createdAt: createdTimestamp(),

@@ -7,9 +7,12 @@ import { ErrorSchema } from "@/google/schema/error";
 
 const ResponseSchema = Schema.Union(AppEditSchema, ErrorSchema);
 
-export const insertEdit = Effect.fn("insertEdit")(function* (packageName: string) {
-  const result = yield* HttpClient.post(`https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/edits`)
-    .pipe(Effect.andThen(HttpClientResponse.schemaBodyJson(ResponseSchema)));
+export const insertEdit = Effect.fn("insertEdit")(function* (
+  packageName: string,
+) {
+  const result = yield* HttpClient.post(
+    `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/edits`,
+  ).pipe(Effect.andThen(HttpClientResponse.schemaBodyJson(ResponseSchema)));
 
   if ("error" in result) {
     return yield* new InsertEditError({

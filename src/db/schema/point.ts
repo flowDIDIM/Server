@@ -51,9 +51,12 @@ export const userPointRelations = relations(userPointTable, ({ one }) => ({
   }),
 }));
 
-export const pointHistoryRelations = relations(pointHistoryTable, ({ one }) => ({
-  user: one(userTable, {
-    fields: [pointHistoryTable.userId],
-    references: [userTable.id],
+export const pointHistoryRelations = relations(
+  pointHistoryTable,
+  ({ one }) => ({
+    user: one(userTable, {
+      fields: [pointHistoryTable.userId],
+      references: [userTable.id],
+    }),
   }),
-}));
+);
