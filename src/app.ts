@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { createApp } from "@/lib/create-app";
 import developerRoute from "@/routes/developer";
 import healthRoute from "@/routes/health";
+import { authCors } from "@/lib/middleware/auth";
 
 export interface AppEnv {
   Variables: {
@@ -15,6 +16,7 @@ export interface AppEnv {
 
 const app = createApp()
   .on(["POST", "GET"], "/api/auth/*", c => auth.handler(c.req.raw))
+  .use("/api/auth/*", authCors)
   .route("/health", healthRoute)
   .route("/developer", developerRoute);
 

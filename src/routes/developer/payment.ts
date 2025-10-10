@@ -1,7 +1,7 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import { Effect, Either } from "effect";
-import { describeRoute, resolver, validator } from "hono-openapi";
+import { validator } from "hono-openapi";
 import { z } from "zod";
 
 import { NewApplicationWithImageSchema } from "@/db/schema";
@@ -13,72 +13,74 @@ import { HttpError } from "@/domain/error/http-error";
 import { createAppUseCase } from "@/domain/use-case/developer/app/create-app.use-case";
 import { getPaymentStatusUseCase } from "@/domain/use-case/developer/payment/get-payment-status.use-case";
 
-const paymentRoute = createApp();
-
-paymentRoute.post(
-  "/create",
-  describeRoute({
-    description: "앱을 등록하고 결제 URL을 생성합니다.",
-    responses: {
-      200: {
-        description: "결제 URL 생성 성공",
-        content: {
-          "application/json": {
-            schema: resolver(
-              z.object({
-                url: z.url(),
-              }),
-            ),
-          },
-        },
-      },
-      401: {
-        description: "인증 실패",
-      },
-      500: {
-        description: "서버 오류",
-      },
-    },
-  }),
-  validator(
-    "json",
-    z.object({
-      application: NewApplicationWithImageSchema,
-      payment: z.object({
-        phoneNumber: z.string(),
-        amount: z.number(),
+const paymentRoute = createApp()
+  .post(
+    "/create",
+    validator(
+      "json",
+      z.object({
+        application: NewApplicationWithImageSchema,
+        payment: z.object({
+          phoneNumber: z.string(),
+          amount: z.number(),
+        }),
       }),
-    }),
-  ),
-  async c => {
-    const user = c.get("user");
-    if (!user) {
-      return c.json({ message: "Unauthorized" }, 401);
-    }
+    ),
+    async c => {
+      const user = c.get("user");
+      if (!user) {
+        return c.json({ message: "Unauthorized" }, 401);
+      }
 
-    const input = c.req.valid("json");
+      const input = c.req.valid("json");
 
-    const createResult = await createAppUseCase(input.application).pipe(
+      const createResult = await createAppUseCase(input.application).pipe(
+        Effect.either,
+        runAsApp,
+      );
+
+      if (Either.isLeft(createResult)) {
+        return c.json(
+          { message: createResult.left.message },
+          createResult.left instanceof HttpError
+            ? (createResult.left.status as ContentfulStatusCode)
+            : 500,
+        );
+      }
+
+      const { id: applicationId, developerId } = createResult.right;
+
+      const result = await createPayUrlUseCase({
+        ...input.payment,
+        applicationId,
+        developerId,
+      }).pipe(Effect.either, runAsApp);
+
+      if (Either.isLeft(result)) {
+        return c.json(
+          { message: result.left.message },
+          result.left instanceof HttpError
+            ? (result.left.status as ContentfulStatusCode)
+            : 500,
+        );
+      }
+
+      return c.json(result.right);
+    },
+  )
+
+  .post("/feedback", async c => {
+    const body = await c.req.parseBody();
+    const data = Object.fromEntries(
+      Object.entries(body)
+        .map(([k, v]) => [k, String(v)])
+        .filter(([_, v]) => v.length > 0),
+    );
+
+    const result = await validatePayappFeedbackUseCase(data).pipe(
       Effect.either,
       runAsApp,
     );
-
-    if (Either.isLeft(createResult)) {
-      return c.json(
-        { message: createResult.left.message },
-        createResult.left instanceof HttpError
-          ? (createResult.left.status as ContentfulStatusCode)
-          : 500,
-      );
-    }
-
-    const { id: applicationId, developerId } = createResult.right;
-
-    const result = await createPayUrlUseCase({
-      ...input.payment,
-      applicationId,
-      developerId,
-    }).pipe(Effect.either, runAsApp);
 
     if (Either.isLeft(result)) {
       return c.json(
@@ -89,59 +91,33 @@ paymentRoute.post(
       );
     }
 
-    return c.json(result.right);
-  },
-);
+    return c.json({ ok: true });
+  })
 
-paymentRoute.post("/feedback", async c => {
-  const body = await c.req.parseBody();
-  const data = Object.fromEntries(
-    Object.entries(body)
-      .map(([k, v]) => [k, String(v)])
-      .filter(([_, v]) => v.length > 0),
-  );
+  .get("/:paymentId", async c => {
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ message: "Unauthorized" }, 401);
+    }
 
-  const result = await validatePayappFeedbackUseCase(data).pipe(
-    Effect.either,
-    runAsApp,
-  );
+    const developerId = user.id;
+    const paymentId = c.req.param("paymentId");
 
-  if (Either.isLeft(result)) {
-    return c.json(
-      { message: result.left.message },
-      result.left instanceof HttpError
-        ? (result.left.status as ContentfulStatusCode)
-        : 500,
+    const result = await getPaymentStatusUseCase(paymentId, developerId).pipe(
+      Effect.either,
+      runAsApp,
     );
-  }
 
-  return c.json({ ok: true });
-});
+    if (Either.isLeft(result)) {
+      return c.json(
+        { message: result.left.message },
+        result.left instanceof HttpError
+          ? (result.left.status as ContentfulStatusCode)
+          : 500,
+      );
+    }
 
-paymentRoute.get("/:paymentId", async c => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ message: "Unauthorized" }, 401);
-  }
-
-  const developerId = user.id;
-  const paymentId = c.req.param("paymentId");
-
-  const result = await getPaymentStatusUseCase(paymentId, developerId).pipe(
-    Effect.either,
-    runAsApp,
-  );
-
-  if (Either.isLeft(result)) {
-    return c.json(
-      { message: result.left.message },
-      result.left instanceof HttpError
-        ? (result.left.status as ContentfulStatusCode)
-        : 500,
-    );
-  }
-
-  return c.json({ state: result.right });
-});
+    return c.json({ state: result.right });
+  });
 
 export default paymentRoute;
