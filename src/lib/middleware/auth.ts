@@ -4,6 +4,7 @@ import { createMiddleware } from "hono/factory";
 import type { AppType } from "@/app";
 
 import { auth } from "@/lib/auth";
+import { env } from "@/lib/env";
 
 export const authMiddleware = createMiddleware<AppType>(async (c, next) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
@@ -18,7 +19,7 @@ export const authMiddleware = createMiddleware<AppType>(async (c, next) => {
 });
 
 export const authCors = cors({
-  origin: "http://localhost:3000",
+  origin: [env.SERVER_URL],
   allowHeaders: ["Content-Type", "Authorization"],
   allowMethods: ["POST", "GET", "OPTIONS"],
   exposeHeaders: ["Content-Length"],

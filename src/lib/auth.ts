@@ -22,24 +22,13 @@ export const auth = betterAuth({
     },
   }),
   plugins: [expo()],
-  emailAndPassword: {
-    enabled: true,
-  },
   socialProviders: {
     google: {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
-    naver: {
-      clientId: env.NAVER_CLIENT_ID,
-      clientSecret: env.NAVER_CLIENT_SECRET,
-    },
-    kakao: {
-      clientId: env.KAKAO_CLIENT_ID,
-      clientSecret: env.KAKAO_CLIENT_SECRET,
-    },
   },
-  trustedOrigins: ["didim://", "exp://203.251.142.12:8081"],
+  trustedOrigins: env.NODE_ENV === "production" ? [env.SERVER_URL] : ["*"],
 });
 
 export type User = typeof auth.$Infer.Session.user;

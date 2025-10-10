@@ -3,6 +3,10 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
+    NODE_ENV: z
+      .enum(["development", "production", "test"])
+      .default("development"),
+
     SERVER_URL: z.string(),
 
     BETTER_AUTH_SECRET: z.string(),
@@ -11,12 +15,6 @@ export const env = createEnv({
 
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
-
-    KAKAO_CLIENT_ID: z.string(),
-    KAKAO_CLIENT_SECRET: z.string(),
-
-    NAVER_CLIENT_ID: z.string(),
-    NAVER_CLIENT_SECRET: z.string(),
 
     PAYAPP_URL: z.string().default("https://api.payapp.kr"),
     PAYAPP_USER_ID: z.string(),
