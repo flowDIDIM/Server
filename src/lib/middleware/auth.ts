@@ -1,12 +1,12 @@
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
 
-import type { AppType } from "@/app";
+import type { AppEnv } from "@/app";
 
 import { auth } from "@/lib/auth";
 import { env } from "@/lib/env";
 
-export const authMiddleware = createMiddleware<AppType>(async (c, next) => {
+export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
   if (!session) {
     c.set("user", null);

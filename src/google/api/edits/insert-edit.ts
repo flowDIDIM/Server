@@ -1,6 +1,5 @@
 import { HttpClient, HttpClientResponse } from "@effect/platform";
-import { Data, Effect } from "effect";
-import Schema from "effect/Schema";
+import { Data, Effect, Schema } from "effect";
 
 import { AppEditSchema, EditIdSchema } from "@/google/schema/app-edit";
 import { ErrorSchema } from "@/google/schema/error";

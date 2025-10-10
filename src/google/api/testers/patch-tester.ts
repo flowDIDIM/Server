@@ -1,6 +1,5 @@
 import { HttpBody, HttpClient, HttpClientResponse } from "@effect/platform";
-import { Data, Effect } from "effect";
-import Schema from "effect/Schema";
+import { Data, Effect, Schema } from "effect";
 
 import type { Testers } from "@/google/schema/testers";
 
