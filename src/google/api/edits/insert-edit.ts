@@ -2,7 +2,7 @@ import { HttpClient, HttpClientResponse } from "@effect/platform";
 import { Data, Effect, Schema } from "effect";
 
 import { AppEditSchema, EditIdSchema } from "@/google/schema/app-edit";
-import { ErrorSchema } from "@/google/schema/error";
+import { ErrorSchema, type GoogleError } from "@/google/schema/error";
 
 const ResponseSchema = Schema.Union(AppEditSchema, ErrorSchema);
 
@@ -25,5 +25,5 @@ export const insertEdit = Effect.fn("insertEdit")(function* (
 
 export class InsertEditError extends Data.TaggedError("InsertEditError")<{
   message: string;
-  cause?: unknown;
+  cause: GoogleError["error"];
 }> {}

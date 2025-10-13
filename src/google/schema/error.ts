@@ -16,3 +16,5 @@ export const ErrorSchema = Schema.Struct({
     }).pipe(Schema.Array, Schema.optional),
   }),
 });
+
+export type GoogleError = Schema.Schema.Type<typeof ErrorSchema>;
