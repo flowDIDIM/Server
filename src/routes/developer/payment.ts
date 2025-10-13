@@ -5,13 +5,20 @@ import { validator } from "hono-openapi";
 import { z } from "zod";
 
 import { NewApplicationWithImageSchema } from "@/db/schema";
-import { validatePayappFeedbackUseCase } from "@/domain/use-case/developer/payment/validate-payapp-feedback.use-case";
 import { createApp } from "@/lib/create-app";
 import { runAsApp } from "@/lib/runtime";
-import { createPayUrlUseCase } from "@/domain/use-case/developer/payment/create-payurl.use-case";
 import { HttpError } from "@/domain/error/http-error";
 import { createAppUseCase } from "@/domain/use-case/developer/app/create-app.use-case";
-import { getPaymentStatusUseCase } from "@/domain/use-case/developer/payment/get-payment-status.use-case";
+import { env } from "@/lib/env";
+import { PaymentWebhookSchema } from "@/domain/schema/payment-webhook";
+import { processPaymentWebhookUseCase } from "@/domain/use-case/developer/payment/process-payment-webhook.use-case";
+
+const PAYMENT_URL_MAP: Record<number, string> = {
+  10000: "https://www.latpeed.com/products/q6y7N/pay",
+  30000: "https://www.latpeed.com/products/fdCxB/pay",
+  50000: "https://www.latpeed.com/products/KgIn2/pay",
+  100000: "https://www.latpeed.com/products/O7sfW/pay",
+};
 
 const paymentRoute = createApp()
   .post(
@@ -20,10 +27,7 @@ const paymentRoute = createApp()
       "json",
       z.object({
         application: NewApplicationWithImageSchema,
-        payment: z.object({
-          phoneNumber: z.string(),
-          amount: z.number(),
-        }),
+        amount: z.number(),
       }),
     ),
     async c => {
@@ -34,10 +38,11 @@ const paymentRoute = createApp()
 
       const input = c.req.valid("json");
 
-      const createResult = await createAppUseCase(input.application).pipe(
-        Effect.either,
-        runAsApp,
-      );
+      // Create application with PENDING payment status (default)
+      const createResult = await createAppUseCase({
+        ...input.application,
+        developerId: user.id,
+      }).pipe(Effect.either, runAsApp);
 
       if (Either.isLeft(createResult)) {
         return c.json(
@@ -48,36 +53,34 @@ const paymentRoute = createApp()
         );
       }
 
-      const { id: applicationId, developerId } = createResult.right;
+      const application = createResult.right;
 
-      const result = await createPayUrlUseCase({
-        ...input.payment,
-        applicationId,
-        developerId,
-      }).pipe(Effect.either, runAsApp);
-
-      if (Either.isLeft(result)) {
+      if (
+        Object.keys(PAYMENT_URL_MAP).indexOf(input.amount.toString()) === -1
+      ) {
         return c.json(
-          { message: result.left.message },
-          result.left instanceof HttpError
-            ? (result.left.status as ContentfulStatusCode)
-            : 500,
+          {
+            message: `Invalid payment amount. Available presets: ${Object.keys(PAYMENT_URL_MAP).join(", ")}`,
+          },
+          400,
         );
       }
 
-      return c.json(result.right);
+      // Return preset payment URL based on amount
+      const paymentUrl = PAYMENT_URL_MAP[input.amount];
+
+      return c.json({
+        applicationId: application.id,
+        paymentUrl,
+        amount: input.amount,
+      });
     },
   )
 
-  .post("/feedback", async c => {
-    const body = await c.req.parseBody();
-    const data = Object.fromEntries(
-      Object.entries(body)
-        .map(([k, v]) => [k, String(v)])
-        .filter(([_, v]) => v.length > 0),
-    );
+  .post("/webhook", validator("json", PaymentWebhookSchema), async c => {
+    const webhook = c.req.valid("json");
 
-    const result = await validatePayappFeedbackUseCase(data).pipe(
+    const result = await processPaymentWebhookUseCase(webhook).pipe(
       Effect.either,
       runAsApp,
     );
@@ -91,33 +94,7 @@ const paymentRoute = createApp()
       );
     }
 
-    return c.json({ ok: true });
-  })
-
-  .get("/:paymentId", async c => {
-    const user = c.get("user");
-    if (!user) {
-      return c.json({ message: "Unauthorized" }, 401);
-    }
-
-    const developerId = user.id;
-    const paymentId = c.req.param("paymentId");
-
-    const result = await getPaymentStatusUseCase(paymentId, developerId).pipe(
-      Effect.either,
-      runAsApp,
-    );
-
-    if (Either.isLeft(result)) {
-      return c.json(
-        { message: result.left.message },
-        result.left instanceof HttpError
-          ? (result.left.status as ContentfulStatusCode)
-          : 500,
-      );
-    }
-
-    return c.json({ state: result.right });
+    return c.json(result.right);
   });
 
 export default paymentRoute;
