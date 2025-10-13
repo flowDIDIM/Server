@@ -1,6 +1,6 @@
 import { Effect, Layer, ManagedRuntime } from "effect";
 
-import { DatabaseLayer, DatabaseService, db } from "@/db";
+import { DatabaseLayer } from "@/db";
 import { FetchHttpClient } from "@effect/platform";
 import { EditsService } from "@/google/service/edits.service";
 import { ImageService } from "@/google/service/image.service";
