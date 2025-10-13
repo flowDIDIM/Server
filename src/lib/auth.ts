@@ -28,7 +28,10 @@ export const auth = betterAuth({
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
-  trustedOrigins: env.NODE_ENV === "production" ? [env.SERVER_URL] : ["*"],
+  trustedOrigins:
+    env.NODE_ENV === "production"
+      ? [env.SERVER_URL, "exp://", "didim://"]
+      : ["*", "exp://", "didim://"],
 });
 
 export type User = typeof auth.$Infer.Session.user;

@@ -1,4 +1,4 @@
-import Schema from "effect/Schema";
+import { Schema } from "effect";
 
 export const EditIdSchema = Schema.String.pipe(Schema.brand("EditId"));
 

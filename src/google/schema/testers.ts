@@ -1,4 +1,4 @@
-import Schema from "effect/Schema";
+import { Schema } from "effect";
 
 export const TestersSchema = Schema.Struct({
   googleGroups: Schema.String.pipe(Schema.Array, Schema.optional),

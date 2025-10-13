@@ -1,4 +1,4 @@
-import Schema from "effect/Schema";
+import { Schema } from "effect";
 
 export const LocalizedTextSchema = Schema.Struct({
   language: Schema.String,

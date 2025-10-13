@@ -1,4 +1,4 @@
-import Schema from "effect/Schema";
+import { Schema } from "effect";
 
 export const GroupSchema = Schema.Struct({
   name: Schema.String,

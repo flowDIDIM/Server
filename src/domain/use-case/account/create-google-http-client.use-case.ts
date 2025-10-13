@@ -6,6 +6,10 @@ import { DatabaseService } from "@/db";
 import { DatabaseError } from "@/db/errors";
 import { accountTable } from "@/db/schema";
 
+const ANDROID_PUBLISHER_SCOPE =
+  "https://www.googleapis.com/auth/androidpublisher";
+
+// TODO: Cache this function?
 export const createGoogleHttpClientUseCase = Effect.fn(
   "createGoogleHttpClientUseCase",
 )(function* (developerId: string) {
@@ -19,8 +23,12 @@ export const createGoogleHttpClientUseCase = Effect.fn(
       new DatabaseError("Failed to fetch Google account", { cause: error }),
   });
 
-  if (!account) {
+  if (!account || !account.accessToken || !account.scope) {
     return yield* new AccountNotFoundError();
+  }
+
+  if (!account.scope.includes(ANDROID_PUBLISHER_SCOPE)) {
+    return yield* new AndroidPublisherPermissionNotFound();
   }
 
   const httpClient = yield* HttpClient.HttpClient;
@@ -37,4 +45,8 @@ export const createGoogleHttpClientUseCase = Effect.fn(
 
 export class AccountNotFoundError extends Data.TaggedError(
   "AccountNotFoundError",
+) {}
+
+export class AndroidPublisherPermissionNotFound extends Data.TaggedError(
+  "AndroidPublisherPermissionNotFound",
 ) {}
