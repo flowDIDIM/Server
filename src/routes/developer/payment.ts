@@ -1,18 +1,15 @@
-import type { ContentfulStatusCode } from "hono/utils/http-status";
-
-import { Effect, Either } from "effect";
 import { validator } from "hono-openapi";
 import { z } from "zod";
 
 import { NewApplicationWithImageSchema } from "@/db/schema";
 import { createApp } from "@/lib/create-app";
 import { runAsApp } from "@/lib/runtime";
-import { HttpError } from "@/domain/error/http-error";
 import { createAppUseCase } from "@/domain/use-case/developer/app/create-app.use-case";
 import { createAppCompletedUseCase } from "@/domain/use-case/developer/app/create-app-completed.use-case";
 import { PaymentWebhookSchema } from "@/domain/schema/payment-webhook";
 import { processPaymentWebhookUseCase } from "@/domain/use-case/developer/payment/process-payment-webhook.use-case";
 import { env } from "@/lib/env";
+import { HttpError } from "@/domain/error/http-error";
 
 const PAYMENT_URL_MAP: Record<number, string> = {
   10000: "https://www.latpeed.com/products/q6y7N/pay",
@@ -41,43 +38,25 @@ const paymentRoute = createApp()
 
       // Demo mode: create application with COMPLETED payment status
       if (env.PAYMENT_DEMO) {
-        const createResult = await createAppCompletedUseCase({
-          ...input.application,
-          developerId: user.id,
-        }).pipe(Effect.either, runAsApp);
-
-        if (Either.isLeft(createResult)) {
-          return c.json(
-            { message: createResult.left.message },
-            createResult.left instanceof HttpError
-              ? (createResult.left.status as ContentfulStatusCode)
-              : 500,
-          );
-        }
+        const application = await runAsApp(
+          createAppCompletedUseCase({
+            ...input.application,
+            developerId: user.id,
+          }),
+        );
 
         return c.json({
-          applicationId: createResult.right.id,
+          applicationId: application.id,
           paymentStatus: "COMPLETED",
           demo: true,
         });
       }
 
       // Create application with PENDING payment status (default)
-      const createResult = await createAppUseCase({
+      const application = await createAppUseCase({
         ...input.application,
         developerId: user.id,
-      }).pipe(Effect.either, runAsApp);
-
-      if (Either.isLeft(createResult)) {
-        return c.json(
-          { message: createResult.left.message },
-          createResult.left instanceof HttpError
-            ? (createResult.left.status as ContentfulStatusCode)
-            : 500,
-        );
-      }
-
-      const application = createResult.right;
+      }).pipe(runAsApp);
 
       if (
         Object.keys(PAYMENT_URL_MAP).indexOf(input.amount.toString()) === -1
@@ -104,21 +83,9 @@ const paymentRoute = createApp()
   .post("/webhook", validator("json", PaymentWebhookSchema), async c => {
     const webhook = c.req.valid("json");
 
-    const result = await processPaymentWebhookUseCase(webhook).pipe(
-      Effect.either,
-      runAsApp,
-    );
+    const result = await runAsApp(processPaymentWebhookUseCase(webhook));
 
-    if (Either.isLeft(result)) {
-      return c.json(
-        { message: result.left.message },
-        result.left instanceof HttpError
-          ? (result.left.status as ContentfulStatusCode)
-          : 500,
-      );
-    }
-
-    return c.json(result.right);
+    return c.json(result);
   });
 
 export default paymentRoute;

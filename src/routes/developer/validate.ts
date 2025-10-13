@@ -1,5 +1,5 @@
 import { HttpClient } from "@effect/platform";
-import { Effect, Either } from "effect";
+import { Effect } from "effect";
 import { validator } from "hono-openapi";
 import { z } from "zod";
 
@@ -43,22 +43,10 @@ const validateRoute = createApp()
         HttpClient.HttpClient,
         createGoogleHttpClientUseCase(user.id),
       ),
-      Effect.either,
       runAsApp,
     );
 
-    if (Either.isLeft(result)) {
-      const error = result.left;
-      return c.json(
-        {
-          message: "Failed to validate package",
-          error: error._tag,
-        },
-        400,
-      );
-    }
-
-    return c.json(result.right);
+    return c.json(result);
   })
   .post("/track", validator("json", TrackValidationSchema), async c => {
     const { packageName, trackId } = c.req.valid("json");
@@ -86,22 +74,10 @@ const validateRoute = createApp()
         HttpClient.HttpClient,
         createGoogleHttpClientUseCase(user.id),
       ),
-      Effect.either,
       runAsApp,
     );
 
-    if (Either.isLeft(result)) {
-      const error = result.left;
-      return c.json(
-        {
-          message: "Failed to validate track",
-          error: error._tag,
-        },
-        400,
-      );
-    }
-
-    return c.json(result.right);
+    return c.json(result);
   });
 
 export default validateRoute;

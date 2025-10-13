@@ -24,7 +24,7 @@ type ProvidedRequirements = Layer.Layer.Success<typeof AppLayer>;
 
 export function runAsApp<
   A,
-  E extends never,
+  E,
   R extends ProvidedRequirements = ProvidedRequirements,
 >(effect: Effect.Effect<A, E, R>) {
   return effect.pipe(

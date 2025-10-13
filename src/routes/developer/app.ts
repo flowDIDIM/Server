@@ -1,4 +1,3 @@
-import { Effect, Either } from "effect";
 import { validator } from "hono-openapi";
 import { z } from "zod";
 
@@ -16,14 +15,10 @@ const appRoute = createApp()
       return c.json({ message: "Unauthorized" }, 401);
     }
 
-    const result = await getAppsUseCase(user.id).pipe(Effect.either, runAsApp);
-
-    if (Either.isLeft(result)) {
-      return c.json({ message: "Failed to get applications" }, 500);
-    }
+    const apps = await getAppsUseCase(user.id).pipe(runAsApp);
 
     return c.json({
-      apps: result.right,
+      apps,
     });
   })
   .patch(
@@ -45,15 +40,10 @@ const appRoute = createApp()
       const input = c.req.valid("json");
 
       const result = await patchAppUseCase(applicationId, user.id, input).pipe(
-        Effect.either,
         runAsApp,
       );
 
-      if (Either.isLeft(result)) {
-        return c.json({ message: "Failed to patch applications" }, 500);
-      }
-
-      return c.json(result.right);
+      return c.json(result);
     },
   )
   .delete("/:id", async c => {
@@ -64,15 +54,10 @@ const appRoute = createApp()
     const applicationId = c.req.param("id");
 
     const result = await deleteAppUseCase(applicationId, user.id).pipe(
-      Effect.either,
       runAsApp,
     );
 
-    if (Either.isLeft(result)) {
-      return c.json({ message: "Failed to delete application" }, 500);
-    }
-
-    return c.json(result.right);
+    return c.json(result);
   });
 
 export default appRoute;

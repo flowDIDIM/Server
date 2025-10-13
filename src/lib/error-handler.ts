@@ -18,7 +18,7 @@ export function handleHonoError(
     const actualError = error[FiberFailureCauseId].defect;
     if (actualError instanceof HttpError) {
       return c.json(
-        { error: error.message },
+        { error: error.message, _tag: actualError._tag },
         actualError.status as ContentfulStatusCode,
       );
     }
