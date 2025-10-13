@@ -1,4 +1,4 @@
-import { Config, Effect } from "effect";
+import { Config, Data, Effect } from "effect";
 
 import { EditsService } from "@/google/service/edits.service";
 import { TestersService } from "@/google/service/testers.service";
@@ -9,6 +9,14 @@ export const validateTestTrackUseCase = Effect.fn("validateTestTrackUseCase")(
     const editId = yield* EditsService.insert(packageName);
     const testers = yield* TestersService.get(packageName, editId, track);
 
-    return testers.includes(googleGroups);
+    const valid = testers.includes(googleGroups);
+
+    if (!valid) {
+      return yield* new NotValidTrackError();
+    }
   },
 );
+
+export class NotValidTrackError extends Data.TaggedError(
+  "NotValidTrackError",
+) {}

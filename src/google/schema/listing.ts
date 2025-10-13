@@ -5,5 +5,5 @@ export const ListingSchema = Schema.Struct({
   title: Schema.String,
   fullDescription: Schema.String,
   shortDescription: Schema.String,
-  video: Schema.String,
+  video: Schema.optional(Schema.String),
 });

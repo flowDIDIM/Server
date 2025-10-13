@@ -74,48 +74,12 @@ const validateRoute = createApp()
     }
 
     const result = await Effect.gen(function* () {
-      const hasGroups = yield* validateTestTrackUseCase(packageName, trackId);
-
-      return {
-        packageName,
-        trackId,
-        isValid: hasGroups,
-      };
-    }).pipe(
-      Effect.provideServiceEffect(
-        HttpClient.HttpClient,
-        createGoogleHttpClientUseCase(user.id),
-      ),
-      Effect.either,
-      runAsApp,
-    );
-
-    if (Either.isLeft(result)) {
-      const error = result.left;
-      return c.json(
-        {
-          message: "Failed to validate track",
-          error: error._tag,
-        },
-        400,
-      );
-    }
-
-    return c.json(result.right);
-  })
-  .post("/app", validator("json", AppInfoSchema), async c => {
-    const { packageName } = c.req.valid("json");
-    const user = c.get("user");
-
-    if (!user) {
-      return c.json({ message: "Unauthorized" }, 401);
-    }
-
-    const result = await Effect.gen(function* () {
+      yield* validateTestTrackUseCase(packageName, trackId);
       const appInfo = yield* getAppInformationUseCase(packageName);
 
       return {
         packageName,
+        trackId,
         title: appInfo.title,
         shortDescription: appInfo.shortDescription,
         detailedDescription: appInfo.fullDescription,
@@ -135,7 +99,7 @@ const validateRoute = createApp()
       const error = result.left;
       return c.json(
         {
-          message: "Failed to get app information",
+          message: "Failed to validate track",
           error: error._tag,
         },
         400,

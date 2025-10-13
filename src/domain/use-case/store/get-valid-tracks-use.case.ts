@@ -9,13 +9,14 @@ export const getValidTracksUseCase = Effect.fn("getValidTracksUseCase")(
 
     const validTracks = yield* TracksService.list(packageName, editId).pipe(
       Effect.andThen(tracks =>
-        tracks.tracks.filter(
-          track =>
-            track.track === "internal" &&
-            track.releases &&
-            track.releases.length > 0 &&
-            track.releases[0].status === "inProgress", // TODO: inProgress만 허용할지 논의 필요
-        ),
+        tracks.tracks
+          .filter(
+            track =>
+              track.releases &&
+              track.releases.length > 0 &&
+              track.releases[0].status === "completed",
+          )
+          .map(track => track.track),
       ),
     );
 
