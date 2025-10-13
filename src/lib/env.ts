@@ -16,12 +16,8 @@ export const env = createEnv({
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
 
-    PAYAPP_URL: z.string().default("https://api.payapp.kr"),
-    PAYAPP_USER_ID: z.string(),
-    PAYAPP_LINK_KEY: z.string(),
-    PAYAPP_LINK_VALUE: z.string(),
-
-    MINIMUM_PAYMENT_AMOUNT: z.coerce.number().default(10000),
+    // Demo mode: skip payment and immediately mark as completed
+    PAYMENT_DEMO: z.coerce.boolean().optional().default(false),
   },
 
   runtimeEnv: process.env,
