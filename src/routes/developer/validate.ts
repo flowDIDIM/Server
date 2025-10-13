@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { createGoogleHttpClientUseCase } from "@/domain/use-case/account/create-google-http-client.use-case";
 import { getAppInformationUseCase } from "@/domain/use-case/store/get-app-information.use-case";
-import { getTracksUseCase } from "@/domain/use-case/store/get-tracks.use-case";
+import { getValidTracksUseCase } from "@/domain/use-case/store/get-valid-tracks-use.case";
 import { isValidPackageNameUseCase } from "@/domain/use-case/store/is-valid-package-name.use-case";
 import { validateTestTrackUseCase } from "@/domain/use-case/store/validate-test-track.use-case";
 import { createApp } from "@/lib/create-app";
@@ -37,11 +37,11 @@ const validateRoute = createApp()
     const result = await Effect.gen(function* () {
       yield* isValidPackageNameUseCase(packageName);
 
-      const tracks = yield* getTracksUseCase(packageName);
+      const tracks = yield* getValidTracksUseCase(packageName);
       return {
         isValid: true,
         packageName,
-        tracks: tracks ?? [],
+        tracks,
       };
     }).pipe(
       Effect.provideServiceEffect(
