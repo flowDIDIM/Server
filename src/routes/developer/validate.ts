@@ -20,11 +20,6 @@ const TrackValidationSchema = z.object({
   trackId: z.string().min(1, "Track ID is required"),
 });
 
-const AppInfoSchema = z.object({
-  packageName: z.string().min(1, "Package name is required"),
-  trackId: z.string().min(1, "Track ID is required"),
-});
-
 const validateRoute = createApp()
   .post("/package", validator("json", PackageValidationSchema), async c => {
     const { packageName } = c.req.valid("json");
