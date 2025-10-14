@@ -1,14 +1,17 @@
 import { Data, Effect } from "effect";
 
 import { EditsService } from "@/google/service/edits.service";
+import { DatabaseService } from "@/db";
+import { applicationTable } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { DatabaseError } from "@/db/errors";
 
 export const isValidPackageNameUseCase = Effect.fn("isValidPackageNameUseCase")(
   function* (packageName: string) {
-    return yield* EditsService.insert(packageName).pipe(
+    // 구글 플레이 콘솔에서 올바른 패키지인지 확인
+    yield* EditsService.insert(packageName).pipe(
       Effect.asVoid,
       Effect.catchTag("InsertEditError", error => {
-        console.log("error.cause.status", error.cause.status);
-
         if (error.cause.status === "NOT_FOUND") {
           return Effect.fail(
             new InvalidPackageNameError({
@@ -28,6 +31,28 @@ export const isValidPackageNameUseCase = Effect.fn("isValidPackageNameUseCase")(
         return Effect.succeedNone;
       }),
     );
+
+    // D에서 올바른 패키지인지 확인
+    const db = yield* DatabaseService;
+    const existApp = yield* Effect.tryPromise({
+      try: () =>
+        db.query.applicationTable.findFirst({
+          where: eq(applicationTable.packageName, packageName),
+        }),
+      catch: error =>
+        new DatabaseError(
+          `Failed to find application that has package name of ${packageName}`,
+          error,
+        ),
+    });
+
+    if (existApp) {
+      return yield* Effect.fail(
+        new InvalidPackageNameError({
+          message: "이미 등록된 패키지명입니다!",
+        }),
+      );
+    }
   },
 );
 
