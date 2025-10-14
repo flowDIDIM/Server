@@ -4,6 +4,7 @@ import { integer, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
 import { applicationTable } from "@/db/schema/application";
 import { userTable } from "@/db/schema/auth";
 import { createdTimestamp, textCuid, updatedTimestamp } from "@/lib/db-column";
+import { TesterStatusEnum } from "@/domain/schema/test-status";
 
 export const testerTable = sqliteTable(
   "tester",
@@ -16,11 +17,9 @@ export const testerTable = sqliteTable(
       .notNull()
       .references(() => userTable.id, { onDelete: "cascade" }),
 
-    status: text({ enum: ["active", "completed", "dropped"] })
-      .notNull()
-      .default("active"),
+    status: text({ enum: TesterStatusEnum }).notNull().default("ONGOING"),
 
-    earnedPoints: integer("earned_points").notNull().default(0),
+    earnedPoints: integer().notNull().default(0),
 
     createdAt: createdTimestamp(),
     updatedAt: updatedTimestamp(),
@@ -40,6 +39,8 @@ export const testLogTable = sqliteTable(
       .notNull()
       .references(() => userTable.id, { onDelete: "cascade" }),
 
+    earnedPoints: integer().notNull().default(0),
+
     // YYYY-MM-DD 형식
     testedAt: text().notNull(),
   },
@@ -53,7 +54,7 @@ export type NewTester = typeof testerTable.$inferInsert;
 export type TestLog = typeof testLogTable.$inferSelect;
 export type NewTestHistory = typeof testLogTable.$inferInsert;
 
-export const testerRelations = relations(testerTable, ({ one }) => ({
+export const testerRelations = relations(testerTable, ({ one, many }) => ({
   application: one(applicationTable, {
     fields: [testerTable.applicationId],
     references: [applicationTable.id],
@@ -62,6 +63,7 @@ export const testerRelations = relations(testerTable, ({ one }) => ({
     fields: [testerTable.testerId],
     references: [userTable.id],
   }),
+  logs: many(testLogTable),
 }));
 
 export const testLogRelations = relations(testLogTable, ({ one }) => ({
