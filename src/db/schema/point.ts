@@ -4,6 +4,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { userTable } from "@/db/schema/auth";
 import { createdTimestamp, textCuid, updatedTimestamp } from "@/lib/db-column";
+import { applicationTable } from "@/db/schema/application";
 
 export const userPointTable = sqliteTable("user_point", {
   id: textCuid().primaryKey(),
@@ -24,9 +25,12 @@ export const pointHistoryTable = sqliteTable("point_history", {
     .references(() => userTable.id, { onDelete: "cascade" }),
 
   amount: integer().notNull(),
-  type: text({ enum: ["earn", "spend"] }).notNull(),
   reason: text().notNull(),
   balance: integer().notNull(),
+
+  relatedApplicationId: text().references(() => applicationTable.id, {
+    onDelete: "cascade",
+  }),
 
   createdAt: createdTimestamp(),
   updatedAt: updatedTimestamp(),
