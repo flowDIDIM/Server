@@ -40,11 +40,13 @@ bunx drizzle-kit studio    # Open Drizzle Studio (database GUI)
 
 - **Runtime**: Bun
 - **Web Framework**: Hono
+- **Package Manager**: pnpm
 - **Database**: SQLite with LibSQL client
 - **ORM**: Drizzle ORM (v0.44.5+)
 - **Effect System**: Effect-TS for functional programming and dependency injection
 - **Auth**: better-auth with Expo plugin and Google OAuth
 - **Validation**: Zod schemas with hono-openapi integration
+- **Date Manipulation**: date-fns for date calculations and formatting
 - **Testing**: Vitest
 
 ### Project Structure
@@ -157,6 +159,13 @@ TypeScript is configured with `@/*` mapping to `src/*`.
 - Tests are colocated with use cases (e.g., `*.use-case.test.ts`)
 - Use Vitest with Effect-TS test utilities
 - Run specific test: `bun test [filename]`
+
+### Date Manipulation
+
+- **Always use date-fns** for date operations instead of native Date methods
+- Use `format()` for date formatting (e.g., `format(new Date(), "yyyy-MM-dd")`)
+- Use `differenceInDays()` for calculating day differences
+- Common date-fns functions: `addDays()`, `subDays()`, `startOfDay()`, `endOfDay()`, `isAfter()`, `isBefore()`
 
 ### Error Handling
 
