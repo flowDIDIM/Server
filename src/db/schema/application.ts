@@ -3,6 +3,7 @@ import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { userTable } from "@/db/schema/auth";
+import { testerTable, testLogTable } from "@/db/schema/test";
 import { createdTimestamp, textCuid, updatedTimestamp } from "@/lib/db-column";
 import { z } from "zod";
 import { PaymentStatusEnum } from "@/domain/schema/payment-status";
@@ -64,6 +65,8 @@ export const applicationRelations = relations(
       references: [userTable.id],
     }),
     images: many(applicationImageTable),
+    testers: many(testerTable),
+    testLogs: many(testLogTable),
   }),
 );
 

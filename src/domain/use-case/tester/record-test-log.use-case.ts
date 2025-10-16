@@ -13,31 +13,28 @@ export const recordTestLogUseCase = Effect.fn("recordTestLogUseCase")(
     const db = yield* DatabaseService;
 
     return yield* Effect.tryPromise(async () => {
-      // 테스터가 해당 앱 테스트에 가입했는지 확인
+      // 오늘 날짜 (YYYY-MM-DD 형식)
+      const today = format(new Date(), "yyyy-MM-dd");
+
+      // 테스터와 오늘의 로그를 한 번에 조회
       const tester = await db.query.testerTable.findFirst({
         where: and(
           eq(testerTable.applicationId, applicationId),
           eq(testerTable.testerId, testerId),
         ),
+        with: {
+          logs: {
+            where: eq(testLogTable.testedAt, today),
+          },
+        },
       });
 
       if (!tester) {
         throw new NotFoundError("Not registered for this app test");
       }
 
-      // 오늘 날짜 (YYYY-MM-DD 형식)
-      const today = format(new Date(), "yyyy-MM-dd");
-
       // 오늘 이미 기록이 있는지 확인
-      const existingLog = await db.query.testLogTable.findFirst({
-        where: and(
-          eq(testLogTable.applicationId, applicationId),
-          eq(testLogTable.testerId, testerId),
-          eq(testLogTable.testedAt, today),
-        ),
-      });
-
-      if (existingLog) {
+      if (tester.logs.length > 0) {
         throw new ConflictError("Test log already recorded for today");
       }
 
