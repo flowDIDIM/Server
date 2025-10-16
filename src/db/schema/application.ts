@@ -6,6 +6,7 @@ import { userTable } from "@/db/schema/auth";
 import { createdTimestamp, textCuid, updatedTimestamp } from "@/lib/db-column";
 import { z } from "zod";
 import { PaymentStatusEnum } from "@/domain/schema/payment-status";
+import { ApplicationTestStatusEnum } from "@/domain/schema/test-status";
 
 export const applicationTable = sqliteTable("application", {
   id: textCuid().primaryKey(),
@@ -20,6 +21,9 @@ export const applicationTable = sqliteTable("application", {
   packageName: text().notNull().unique(),
   trackName: text().notNull(),
 
+  status: text({ enum: ApplicationTestStatusEnum })
+    .notNull()
+    .default("ONGOING"),
   paymentStatus: text({ enum: PaymentStatusEnum }).notNull().default("PENDING"),
 
   createdAt: createdTimestamp(),

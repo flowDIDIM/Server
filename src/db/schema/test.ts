@@ -59,7 +59,7 @@ export const testerRelations = relations(testerTable, ({ one, many }) => ({
     fields: [testerTable.applicationId],
     references: [applicationTable.id],
   }),
-  tester: one(userTable, {
+  user: one(userTable, {
     fields: [testerTable.testerId],
     references: [userTable.id],
   }),
@@ -71,7 +71,7 @@ export const testLogRelations = relations(testLogTable, ({ one }) => ({
     fields: [testLogTable.applicationId],
     references: [applicationTable.id],
   }),
-  tester: one(userTable, {
+  user: one(userTable, {
     fields: [testLogTable.testerId],
     references: [userTable.id],
   }),
