@@ -75,4 +75,8 @@ export const testLogRelations = relations(testLogTable, ({ one }) => ({
     fields: [testLogTable.testerId],
     references: [userTable.id],
   }),
+  tester: one(testerTable, {
+    fields: [testLogTable.applicationId, testLogTable.testerId],
+    references: [testerTable.applicationId, testerTable.testerId],
+  }),
 }));

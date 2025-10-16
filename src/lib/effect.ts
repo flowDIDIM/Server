@@ -9,5 +9,9 @@ export const mapHttpError = Effect.mapError(error => {
     return error.error;
   }
 
-  return new InternalServerError("An unexpected error occurred", error);
+  console.error("Unexpected error:", error);
+
+  return new InternalServerError("An unexpected error occurred", {
+    cause: error,
+  });
 });

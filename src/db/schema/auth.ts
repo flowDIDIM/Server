@@ -57,3 +57,6 @@ export const verificationTable = sqliteTable("verification", {
   createdAt: createdTimestamp(),
   updatedAt: updatedTimestamp(),
 });
+
+export type User = typeof userTable.$inferSelect;
+export type NewUser = typeof userTable.$inferInsert;

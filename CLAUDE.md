@@ -160,6 +160,47 @@ TypeScript is configured with `@/*` mapping to `src/*`.
 - Use Vitest with Effect-TS test utilities
 - Run specific test: `bun test [filename]`
 
+#### Factory Pattern in Tests
+
+When writing tests, follow these guidelines for using factories:
+
+1. **Initialize factories once in beforeEach**: Create factory instances as `let` variables in the describe block and initialize them in `beforeEach` to avoid repetition
+
+```typescript
+describe("someUseCase", () => {
+  let db: Database;
+  let runtime: TestRuntime;
+  let userFactory: ReturnType<typeof usersFactory>;
+  let appFactoryInstance: ReturnType<typeof appFactory>;
+
+  beforeEach(async () => {
+    db = await createTestDatabase();
+    userFactory = usersFactory(db);
+    appFactoryInstance = appFactory(db);
+    runtime = createTestRuntime(db);
+  });
+});
+```
+
+2. **Use direct .create() calls**: Pass parameters directly to `.create()` instead of using `.vars()` chaining
+
+```typescript
+// ✅ Correct
+await userFactory.create({ email: "test@example.com" });
+await testerFactoryInstance.create({
+  applicationId: app.id,
+  testerId: tester.id,
+});
+
+// ❌ Incorrect
+await usersFactory(db).create({ email: "test@example.com" });
+await testerFactory(db)
+  .vars({ applicationId: app.id, testerId: tester.id })
+  .create();
+```
+
+3. **Reuse factory instances**: Use the factory instances created in `beforeEach` throughout all test cases instead of creating new factory instances in each test
+
 ### Date Manipulation
 
 - **Always use date-fns** for date operations instead of native Date methods

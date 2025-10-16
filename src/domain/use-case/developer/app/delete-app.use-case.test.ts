@@ -21,10 +21,13 @@ describe("deleteAppUseCase", async () => {
   let db: Database;
   let developerId: string;
   let runtime: TestRuntime;
+  let userFactory: ReturnType<typeof usersFactory>;
 
   beforeEach(async () => {
     db = await createTestDatabase();
-    const user = await usersFactory(db).create();
+    userFactory = usersFactory(db);
+
+    const user = await userFactory.create();
     developerId = user.id;
     runtime = createTestRuntime(db);
   });
@@ -115,7 +118,7 @@ describe("deleteAppUseCase", async () => {
 
     const createdApp = await createAppUseCase(input).pipe(runtime.runPromise);
 
-    const otherUser = await usersFactory(db).create();
+    const otherUser = await userFactory.create();
 
     await expect(
       deleteAppUseCase(createdApp.id, otherUser.id).pipe(

@@ -13,9 +13,9 @@ import {
   usersFactory,
 } from "@/lib/test-helpers";
 
-import { createAppUseCase } from "./create-app.use-case";
+import { createAppCompletedUseCase } from "./create-app-completed.use-case";
 
-describe("createAppUseCase", async () => {
+describe("createAppCompletedUseCase", () => {
   let db: Database;
   let developerId: string;
   let runtime: TestRuntime;
@@ -30,7 +30,7 @@ describe("createAppUseCase", async () => {
     runtime = createTestRuntime(db);
   });
 
-  it("앱을 성공적으로 생성한다", async () => {
+  it("결제 완료 상태로 앱을 성공적으로 생성한다", async () => {
     const input = {
       developerId,
       packageName: "com.example.testapp",
@@ -45,7 +45,9 @@ describe("createAppUseCase", async () => {
       ],
     };
 
-    const result = await createAppUseCase(input).pipe(runtime.runPromise);
+    const result = await createAppCompletedUseCase(input).pipe(
+      runtime.runPromise,
+    );
 
     expect(result).toMatchObject({
       packageName: input.packageName,
@@ -54,6 +56,7 @@ describe("createAppUseCase", async () => {
       fullDescription: input.fullDescription,
       icon: input.icon,
       trackName: input.trackName,
+      paymentStatus: "COMPLETED",
     });
 
     const dbApp = await db.query.applicationTable.findFirst({
@@ -62,13 +65,14 @@ describe("createAppUseCase", async () => {
     });
 
     expect(dbApp).toBeDefined();
+    expect(dbApp?.paymentStatus).toBe("COMPLETED");
     expect(dbApp?.images).toMatchObject([
       { url: input.images[0] },
       { url: input.images[1] },
     ]);
   });
 
-  it("이미지 없이 앱을 생성한다", async () => {
+  it("이미지 없이 결제 완료 상태로 앱을 생성한다", async () => {
     const input = {
       developerId,
       packageName: "com.example.noimage",
@@ -80,9 +84,12 @@ describe("createAppUseCase", async () => {
       images: [],
     };
 
-    const result = await createAppUseCase(input).pipe(runtime.runPromise);
+    const result = await createAppCompletedUseCase(input).pipe(
+      runtime.runPromise,
+    );
 
     expect(result).toBeDefined();
+    expect(result.paymentStatus).toBe("COMPLETED");
 
     const dbApp = await db.query.applicationTable.findFirst({
       where: eq(applicationTable.packageName, input.packageName),
@@ -90,6 +97,7 @@ describe("createAppUseCase", async () => {
     });
 
     expect(dbApp).toBeDefined();
+    expect(dbApp?.paymentStatus).toBe("COMPLETED");
     expect(dbApp?.images).toHaveLength(0);
   });
 
@@ -105,19 +113,54 @@ describe("createAppUseCase", async () => {
       images: [],
     };
 
-    await createAppUseCase(input).pipe(runtime.runPromise);
+    await createAppCompletedUseCase(input).pipe(runtime.runPromise);
 
     const duplicateInput = {
       ...input,
-      title: "Second App",
+      name: "Second App",
     };
 
     await expect(
-      createAppUseCase(duplicateInput).pipe(Effect.either, runtime.runPromise),
+      createAppCompletedUseCase(duplicateInput).pipe(
+        Effect.either,
+        runtime.runPromise,
+      ),
     ).resolves.toEqual(
       Either.left(
         new ConflictError("Application with this package name already exists"),
       ),
     );
+  });
+
+  it("여러 이미지와 함께 앱을 생성한다", async () => {
+    const input = {
+      developerId,
+      packageName: "com.example.multiimage",
+      trackName: "internal",
+      name: "Multi Image App",
+      shortDescription: "Short description",
+      fullDescription: "Full description",
+      icon: "https://example.com/icon.png",
+      images: [
+        "https://example.com/image1.png",
+        "https://example.com/image2.png",
+        "https://example.com/image3.png",
+        "https://example.com/image4.png",
+      ],
+    };
+
+    const result = await createAppCompletedUseCase(input).pipe(
+      runtime.runPromise,
+    );
+
+    expect(result.paymentStatus).toBe("COMPLETED");
+
+    const dbApp = await db.query.applicationTable.findFirst({
+      where: eq(applicationTable.packageName, input.packageName),
+      with: { images: true },
+    });
+
+    expect(dbApp?.images).toHaveLength(4);
+    expect(dbApp?.images.map(img => img.url)).toEqual(input.images);
   });
 });

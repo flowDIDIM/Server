@@ -16,10 +16,13 @@ describe("getAppsUseCase", () => {
   let db: Database;
   let developerId: string;
   let runtime: TestRuntime;
+  let userFactory: ReturnType<typeof usersFactory>;
 
   beforeEach(async () => {
     db = await createTestDatabase();
-    const user = await usersFactory(db).create();
+    userFactory = usersFactory(db);
+
+    const user = await userFactory.create();
     developerId = user.id;
     runtime = createTestRuntime(db);
   });
@@ -85,7 +88,7 @@ describe("getAppsUseCase", () => {
       images: [],
     }).pipe(runtime.runPromise);
 
-    const otherUser = await usersFactory(db).create();
+    const otherUser = await userFactory.create();
 
     await createAppUseCase({
       developerId: otherUser.id,

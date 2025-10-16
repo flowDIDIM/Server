@@ -35,15 +35,14 @@ export const tables = {
   gifticonProductTable: schema.gifticonProductTable,
   gifticonPurchaseTable: schema.gifticonPurchaseTable,
 
-  paymentTable: schema.paymentHistoryTable,
-
   userPointTable: schema.userPointTable,
   pointHistoryTable: schema.pointHistoryTable,
 
-  appTesterTable: schema.appTesterTable,
-  testHistoryTable: schema.testHistoryTable,
-  appTestConfigTable: schema.appTestConfigTable,
-};
+  testerTable: schema.testerTable,
+  testLogTable: schema.testLogTable,
+
+  webhookHistoryTable: schema.webhookHistoryTable,
+} as const;
 
 export const usersFactory = defineFactory({
   schema: tables,
@@ -72,9 +71,10 @@ export const appFactory = defineFactory({
     shortDescription: `Short description ${sequence}`,
     fullDescription: `Full description ${sequence}`,
     icon: `https://example.com/icon-${sequence}.png`,
-    packageName: `com.example.testapp-${sequence}`,
+    packageName: `com.example.testapp${sequence}`,
     trackName: "internal",
-    paymentState: "결제완료",
+    status: "ONGOING",
+    paymentStatus: "COMPLETED",
     createdAt: Date.now(),
     updatedAt: Date.now(),
   }),
@@ -92,5 +92,43 @@ export const appImageFactory = defineFactory({
     url: `https://example.com/image-${sequence}.png`,
     createdAt: Date.now(),
     updatedAt: Date.now(),
+  }),
+});
+
+export const testerFactory = defineFactory({
+  schema: tables,
+  table: "testerTable",
+  resolver: ({ sequence, use }) => ({
+    id: `test-tester-id-${sequence}`,
+    applicationId: () =>
+      use(appFactory)
+        .create()
+        .then(app => app.id),
+    testerId: () =>
+      use(usersFactory)
+        .create()
+        .then(user => user.id),
+    status: "ONGOING",
+    earnedPoints: 0,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  }),
+});
+
+export const testLogFactory = defineFactory({
+  schema: tables,
+  table: "testLogTable",
+  resolver: ({ sequence, use }) => ({
+    id: `test-log-id-${sequence}`,
+    applicationId: () =>
+      use(appFactory)
+        .create()
+        .then(app => app.id),
+    testerId: () =>
+      use(usersFactory)
+        .create()
+        .then(user => user.id),
+    earnedPoints: 0,
+    testedAt: "2025-01-01",
   }),
 });

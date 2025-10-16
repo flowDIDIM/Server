@@ -23,11 +23,16 @@ describe("editAppUseCase", () => {
   let app: Application;
   let applicationId: string;
   let runtime: TestRuntime;
+  let appFactoryInstance: ReturnType<typeof appFactory>;
+  let appImageFactoryInstance: ReturnType<typeof appImageFactory>;
 
   beforeEach(async () => {
     db = await createTestDatabase();
-    app = await appFactory(db).create();
-    await appImageFactory(db).create(3);
+    appFactoryInstance = appFactory(db);
+    appImageFactoryInstance = appImageFactory(db);
+
+    app = await appFactoryInstance.create();
+    await appImageFactoryInstance.create(3);
     applicationId = app.id;
     runtime = createTestRuntime(db);
   });
