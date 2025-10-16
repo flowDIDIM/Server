@@ -40,6 +40,7 @@ export const joinAppTestUseCase = Effect.fn("joinAppTestUseCase")(function* (
       .values({
         applicationId,
         testerId,
+        earnedPoints: 0,
       })
       .returning();
 

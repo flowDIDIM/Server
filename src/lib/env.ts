@@ -18,6 +18,9 @@ export const env = createEnv({
 
     // Demo mode: skip payment and immediately mark as completed
     PAYMENT_DEMO: z.coerce.boolean().optional().default(false),
+
+    // Commission rate for platform fee (0.0 to 1.0, default 0.2 = 20%)
+    COMMISSION_RATE: z.coerce.number().min(0).max(1).optional().default(0.2),
   },
 
   runtimeEnv: process.env,

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { userTable } from "@/db/schema/auth";
@@ -26,6 +26,7 @@ export const applicationTable = sqliteTable("application", {
     .notNull()
     .default("ONGOING"),
   paymentStatus: text({ enum: PaymentStatusEnum }).notNull().default("PENDING"),
+  price: integer().notNull().default(0),
 
   createdAt: createdTimestamp(),
   updatedAt: updatedTimestamp(),

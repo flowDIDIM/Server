@@ -19,7 +19,7 @@ export const testerTable = sqliteTable(
 
     status: text({ enum: TesterStatusEnum }).notNull().default("ONGOING"),
 
-    earnedPoints: integer().notNull().default(0),
+    earnedPoints: integer().notNull(),
 
     createdAt: createdTimestamp(),
     updatedAt: updatedTimestamp(),
@@ -39,7 +39,7 @@ export const testLogTable = sqliteTable(
       .notNull()
       .references(() => userTable.id, { onDelete: "cascade" }),
 
-    earnedPoints: integer().notNull().default(0),
+    earnedPoints: integer().notNull(),
 
     // YYYY-MM-DD 형식
     testedAt: text().notNull(),

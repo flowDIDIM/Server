@@ -72,6 +72,7 @@ export const appFactory = defineFactory({
     fullDescription: `Full description ${sequence}`,
     icon: `https://example.com/icon-${sequence}.png`,
     packageName: `com.example.testapp${sequence}`,
+    price: 10000,
     trackName: "internal",
     status: "ONGOING",
     paymentStatus: "COMPLETED",
