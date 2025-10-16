@@ -12,7 +12,7 @@
  *
  * 합계: 5+5+6+6+7+7+7+8+8+8+9+9+9+10 = 100%
  */
-export const DAILY_POINT_PERCENTAGE: Record<number, number> = {
+const DAILY_POINT_PERCENTAGE_INTERNAL = {
   1: 0.05, // 5%
   2: 0.05, // 5%
   3: 0.06, // 6%
@@ -28,6 +28,16 @@ export const DAILY_POINT_PERCENTAGE: Record<number, number> = {
   13: 0.09, // 9%
   14: 0.1, // 10%
 } as const;
+
+export const DAILY_POINT_PERCENTAGE: Record<number, number> =
+  DAILY_POINT_PERCENTAGE_INTERNAL;
+
+/**
+ * 테스트 기간 (DAILY_POINT_PERCENTAGE의 최대 일수)
+ */
+export const DEFAULT_TEST_DAY = Math.max(
+  ...Object.keys(DAILY_POINT_PERCENTAGE_INTERNAL).map(Number),
+);
 
 /**
  * 테스터 수 (기본값: 20명)

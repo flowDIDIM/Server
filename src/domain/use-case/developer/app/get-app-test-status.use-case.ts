@@ -8,6 +8,7 @@ import { applicationTable } from "@/db/schema";
 import { mapHttpError } from "@/lib/effect";
 import { NotFoundError } from "@/domain/error/not-found-error";
 import { UnauthorizedError } from "@/domain/error/unauthorized-error";
+import { DEFAULT_TEST_DAY } from "@/domain/constants/test-config";
 
 export const getAppTestStatusUseCase = Effect.fn("getAppTestStatusUseCase")(
   function* (applicationId: string, developerId: string) {
@@ -104,13 +105,16 @@ export const getAppTestStatusUseCase = Effect.fn("getAppTestStatusUseCase")(
           null as string | null,
         );
 
-        // 전체 진행률 계산 (14일 기준, 가장 늦게 시작한 사람 기준)
+        // 전체 진행률 계산 (DEFAULT_TEST_DAY 기준, 가장 늦게 시작한 사람 기준)
         let progress = 0;
         if (latestStartDate) {
           const startDate = new Date(latestStartDate);
           const currentDate = new Date(today);
           const daysPassed = differenceInDays(currentDate, startDate) + 1;
-          progress = Math.min(Math.round((daysPassed / 14) * 100), 100);
+          progress = Math.min(
+            Math.round((daysPassed / DEFAULT_TEST_DAY) * 100),
+            100,
+          );
         }
 
         return {

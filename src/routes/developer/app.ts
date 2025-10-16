@@ -22,6 +22,19 @@ const appRoute = createApp()
       apps,
     });
   })
+  .get("/:id", async c => {
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ message: "Unauthorized" }, 401);
+    }
+    const applicationId = c.req.param("id");
+
+    const result = await getAppTestStatusUseCase(applicationId, user.id).pipe(
+      runAsApp,
+    );
+
+    return c.json(result);
+  })
   .patch(
     "/:id",
     validator(
@@ -55,19 +68,6 @@ const appRoute = createApp()
     const applicationId = c.req.param("id");
 
     const result = await deleteAppUseCase(applicationId, user.id).pipe(
-      runAsApp,
-    );
-
-    return c.json(result);
-  })
-  .get("/:id/status", async c => {
-    const user = c.get("user");
-    if (!user) {
-      return c.json({ message: "Unauthorized" }, 401);
-    }
-    const applicationId = c.req.param("id");
-
-    const result = await getAppTestStatusUseCase(applicationId, user.id).pipe(
       runAsApp,
     );
 
