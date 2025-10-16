@@ -4,6 +4,7 @@ import { z } from "zod";
 import { NewApplicationSchema } from "@/db/schema";
 import { deleteAppUseCase } from "@/domain/use-case/developer/app/delete-app.use-case";
 import { getAppsUseCase } from "@/domain/use-case/developer/app/get-apps.use-case";
+import { getAppTestStatusUseCase } from "@/domain/use-case/developer/app/get-app-test-status.use-case";
 import { patchAppUseCase } from "@/domain/use-case/developer/app/patch-app.use-case";
 import { createApp } from "@/lib/create-app";
 import { runAsApp } from "@/lib/runtime";
@@ -54,6 +55,19 @@ const appRoute = createApp()
     const applicationId = c.req.param("id");
 
     const result = await deleteAppUseCase(applicationId, user.id).pipe(
+      runAsApp,
+    );
+
+    return c.json(result);
+  })
+  .get("/:id/status", async c => {
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ message: "Unauthorized" }, 401);
+    }
+    const applicationId = c.req.param("id");
+
+    const result = await getAppTestStatusUseCase(applicationId, user.id).pipe(
       runAsApp,
     );
 

@@ -75,18 +75,17 @@ Routes use `createApp()` helper which applies standard middleware stack.
 The codebase uses Effect-TS for:
 
 - **Dependency Injection**: Services are defined as Effect.Service (e.g., `DatabaseService`, `EditsService`)
-- **Error Handling**: Use `Effect.either` and `runAsApp` to convert Effects to Promises
+- **Error Handling**: Errors are automatically handled by Hono's error handler (`handleHonoError`)
 - **Runtime**: `runAsApp` from `src/lib/runtime.ts` provides DatabaseService and FetchHttpClient layers
 
 **Pattern**: All use cases return `Effect<Result, Error, Requirements>` and are executed in routes via:
 
 ```typescript
-const result = await useCase(params).pipe(Effect.either, runAsApp);
-if (Either.isLeft(result)) {
-  // Handle error
-}
-return result.right;
+const result = await useCase(params).pipe(runAsApp);
+return c.json(result);
 ```
+
+**Important**: Do NOT use `Effect.either` in routes. The global error handler (`handleHonoError` in `src/lib/error-handler.ts`) automatically catches and handles all errors thrown by Effect-TS, converting `HttpError` instances to appropriate HTTP responses.
 
 #### Domain Layer (`src/domain/`)
 
@@ -143,8 +142,8 @@ TypeScript is configured with `@/*` mapping to `src/*`.
 2. Define schemas in `src/db/schema/` or `src/domain/schema/`
 3. Create route file in `src/routes/`
 4. Use `validator` from hono-openapi for request validation
-5. Execute use case with `Effect.either` and `runAsApp`
-6. Handle Either result and return appropriate HTTP response
+5. Execute use case with `runAsApp` (do NOT use `Effect.either`)
+6. Return result directly with `c.json(result)` - errors are handled automatically by `handleHonoError`
 
 ### Adding a Database Table
 
@@ -212,4 +211,5 @@ await testerFactory(db)
 
 - Use `HttpError` from `src/domain/error/http-error.ts` for HTTP errors with status codes
 - Use `mapHttpError` helper from `src/lib/effect.ts` to convert Promise rejections to HttpError
-- Return appropriate status codes via Either pattern
+- Errors are automatically handled by `handleHonoError` in routes - no need to use `Effect.either` or manual error handling
+- The error handler converts `HttpError` instances to appropriate HTTP responses with status codes

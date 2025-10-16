@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { createApp } from "@/lib/create-app";
 import developerRoute from "@/routes/developer";
 import healthRoute from "@/routes/health";
+import testerRoute from "@/routes/tester";
 import { authCors } from "@/lib/middleware/auth";
 import { handleHonoError } from "@/lib/error-handler";
 
@@ -20,6 +21,7 @@ const app = createApp()
   .use("/api/auth/*", authCors)
   .route("/health", healthRoute)
   .route("/developer", developerRoute)
+  .route("/tester", testerRoute)
   .onError(handleHonoError);
 
 export default app;
