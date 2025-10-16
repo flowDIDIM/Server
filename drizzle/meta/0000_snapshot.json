@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9eae92e0-d07c-46da-b65a-59ba5c93415d",
+  "id": "3a493363-6d4b-4681-bba0-91bf30f23362",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "application_image": {
@@ -34,7 +34,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         },
         "updated_at": {
           "name": "updated_at",
@@ -42,7 +42,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         }
       },
       "indexes": {},
@@ -124,13 +124,29 @@
           "notNull": true,
           "autoincrement": false
         },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ONGOING'"
+        },
+        "payment_status": {
+          "name": "payment_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PENDING'"
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         },
         "updated_at": {
           "name": "updated_at",
@@ -138,7 +154,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         }
       },
       "indexes": {
@@ -255,7 +271,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         },
         "updated_at": {
           "name": "updated_at",
@@ -263,7 +279,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         }
       },
       "indexes": {},
@@ -337,7 +353,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         },
         "updated_at": {
           "name": "updated_at",
@@ -345,7 +361,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         }
       },
       "indexes": {
@@ -421,7 +437,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         },
         "updated_at": {
           "name": "updated_at",
@@ -429,7 +445,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         }
       },
       "indexes": {
@@ -483,7 +499,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         },
         "updated_at": {
           "name": "updated_at",
@@ -491,7 +507,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         }
       },
       "indexes": {},
@@ -559,7 +575,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         },
         "updated_at": {
           "name": "updated_at",
@@ -567,7 +583,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         }
       },
       "indexes": {},
@@ -635,7 +651,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         },
         "updated_at": {
           "name": "updated_at",
@@ -643,7 +659,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         }
       },
       "indexes": {},
@@ -667,102 +683,6 @@
           "tableTo": "gifticon_product",
           "columnsFrom": [
             "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "payment": {
-      "name": "payment",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "application_id": {
-          "name": "application_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "developer_id": {
-          "name": "developer_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "amount": {
-          "name": "amount",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "paid_at": {
-          "name": "paid_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "payment_application_id_application_id_fk": {
-          "name": "payment_application_id_application_id_fk",
-          "tableFrom": "payment",
-          "tableTo": "application",
-          "columnsFrom": [
-            "application_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "payment_developer_id_user_id_fk": {
-          "name": "payment_developer_id_user_id_fk",
-          "tableFrom": "payment",
-          "tableTo": "user",
-          "columnsFrom": [
-            "developer_id"
           ],
           "columnsTo": [
             "id"
@@ -799,13 +719,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "reason": {
           "name": "reason",
           "type": "text",
@@ -820,13 +733,20 @@
           "notNull": true,
           "autoincrement": false
         },
+        "related_application_id": {
+          "name": "related_application_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         },
         "updated_at": {
           "name": "updated_at",
@@ -834,7 +754,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         }
       },
       "indexes": {},
@@ -845,6 +765,19 @@
           "tableTo": "user",
           "columnsFrom": [
             "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "point_history_related_application_id_application_id_fk": {
+          "name": "point_history_related_application_id_application_id_fk",
+          "tableFrom": "point_history",
+          "tableTo": "application",
+          "columnsFrom": [
+            "related_application_id"
           ],
           "columnsTo": [
             "id"
@@ -888,7 +821,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         },
         "updated_at": {
           "name": "updated_at",
@@ -896,7 +829,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         }
       },
       "indexes": {
@@ -927,8 +860,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "app_test_config": {
-      "name": "app_test_config",
+    "test_log": {
+      "name": "test_log",
       "columns": {
         "id": {
           "name": "id",
@@ -944,78 +877,60 @@
           "notNull": true,
           "autoincrement": false
         },
-        "status": {
-          "name": "status",
+        "tester_id": {
+          "name": "tester_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "'in_progress'"
-        },
-        "required_days": {
-          "name": "required_days",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 14
-        },
-        "required_testers": {
-          "name": "required_testers",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 20
-        },
-        "started_at": {
-          "name": "started_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "ended_at": {
-          "name": "ended_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
-        "created_at": {
-          "name": "created_at",
+        "earned_points": {
+          "name": "earned_points",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": 0
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "integer",
+        "tested_at": {
+          "name": "tested_at",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "autoincrement": false
         }
       },
       "indexes": {
-        "app_test_config_applicationId_unique": {
-          "name": "app_test_config_applicationId_unique",
+        "test_log_applicationId_testerId_testedAt_unique": {
+          "name": "test_log_applicationId_testerId_testedAt_unique",
           "columns": [
-            "application_id"
+            "application_id",
+            "tester_id",
+            "tested_at"
           ],
           "isUnique": true
         }
       },
       "foreignKeys": {
-        "app_test_config_application_id_application_id_fk": {
-          "name": "app_test_config_application_id_application_id_fk",
-          "tableFrom": "app_test_config",
+        "test_log_application_id_application_id_fk": {
+          "name": "test_log_application_id_application_id_fk",
+          "tableFrom": "test_log",
           "tableTo": "application",
           "columnsFrom": [
             "application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "test_log_tester_id_user_id_fk": {
+          "name": "test_log_tester_id_user_id_fk",
+          "tableFrom": "test_log",
+          "tableTo": "user",
+          "columnsFrom": [
+            "tester_id"
           ],
           "columnsTo": [
             "id"
@@ -1028,8 +943,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "app_tester": {
-      "name": "app_tester",
+    "tester": {
+      "name": "tester",
       "columns": {
         "id": {
           "name": "id",
@@ -1058,7 +973,15 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'active'"
+          "default": "'ONGOING'"
+        },
+        "earned_points": {
+          "name": "earned_points",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
         },
         "created_at": {
           "name": "created_at",
@@ -1066,7 +989,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         },
         "updated_at": {
           "name": "updated_at",
@@ -1074,14 +997,23 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "tester_applicationId_testerId_unique": {
+          "name": "tester_applicationId_testerId_unique",
+          "columns": [
+            "application_id",
+            "tester_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
-        "app_tester_application_id_application_id_fk": {
-          "name": "app_tester_application_id_application_id_fk",
-          "tableFrom": "app_tester",
+        "tester_application_id_application_id_fk": {
+          "name": "tester_application_id_application_id_fk",
+          "tableFrom": "tester",
           "tableTo": "application",
           "columnsFrom": [
             "application_id"
@@ -1092,9 +1024,9 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "app_tester_tester_id_user_id_fk": {
-          "name": "app_tester_tester_id_user_id_fk",
-          "tableFrom": "app_tester",
+        "tester_tester_id_user_id_fk": {
+          "name": "tester_tester_id_user_id_fk",
+          "tableFrom": "tester",
           "tableTo": "user",
           "columnsFrom": [
             "tester_id"
@@ -1110,8 +1042,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "test_history": {
-      "name": "test_history",
+    "webhook_history": {
+      "name": "webhook_history",
       "columns": {
         "id": {
           "name": "id",
@@ -1120,27 +1052,12 @@
           "notNull": true,
           "autoincrement": false
         },
-        "application_id": {
-          "name": "application_id",
+        "payload": {
+          "name": "payload",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
-        },
-        "tester_id": {
-          "name": "tester_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "tested_at": {
-          "name": "tested_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
         },
         "created_at": {
           "name": "created_at",
@@ -1148,46 +1065,11 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(unixepoch() * 1000)"
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "test_history_application_id_application_id_fk": {
-          "name": "test_history_application_id_application_id_fk",
-          "tableFrom": "test_history",
-          "tableTo": "application",
-          "columnsFrom": [
-            "application_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "test_history_tester_id_user_id_fk": {
-          "name": "test_history_tester_id_user_id_fk",
-          "tableFrom": "test_history",
-          "tableTo": "user",
-          "columnsFrom": [
-            "tester_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
