@@ -4,18 +4,20 @@ import { migrate } from "drizzle-orm/libsql/migrator";
 import { Layer, ManagedRuntime } from "effect";
 
 import type { Database } from "@/db";
-
 import { DatabaseService } from "@/db";
 import * as schema from "@/db/schema";
+import { createId } from "@paralleldrive/cuid2";
 
 export async function createTestDatabase() {
-  const db = drizzle("file::memory:?cache=shared", {
+  const db = drizzle(`file:test/${createId()}.db`, {
     schema,
     casing: "snake_case",
   });
+
   await migrate(db, {
     migrationsFolder: "./drizzle",
   });
+
   return db;
 }
 
