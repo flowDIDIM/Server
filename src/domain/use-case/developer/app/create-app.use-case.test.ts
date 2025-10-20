@@ -15,7 +15,7 @@ import {
 
 import { createAppUseCase } from "./create-app.use-case";
 
-describe("createAppUseCase", async () => {
+describe("createAppUseCase", () => {
   let db: Database;
   let developerId: string;
   let runtime: TestRuntime;

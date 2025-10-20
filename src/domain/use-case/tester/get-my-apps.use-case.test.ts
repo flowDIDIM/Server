@@ -9,13 +9,14 @@ import {
   appFactory,
   createTestDatabase,
   createTestRuntime,
+  daysAgoString,
   testLogFactory,
   testerFactory,
+  todayString,
   usersFactory,
 } from "@/lib/test-helpers";
 
 import { getMyAppsUseCase } from "./get-my-apps.use-case";
-import { format, subDays } from "date-fns";
 
 describe("getMyAppsUseCase", () => {
   let db: Database;
@@ -78,17 +79,17 @@ describe("getMyAppsUseCase", () => {
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: format(subDays(new Date(), 2), "yyyy-MM-dd"),
+      testedAt: daysAgoString(2),
     });
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: format(subDays(new Date(), 1), "yyyy-MM-dd"),
+      testedAt: daysAgoString(1),
     });
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: format(new Date(), "yyyy-MM-dd"),
+      testedAt: todayString(),
     });
 
     const result = await getMyAppsUseCase(tester.id).pipe(runtime.runPromise);
@@ -107,11 +108,10 @@ describe("getMyAppsUseCase", () => {
       status: "DROPPED",
     });
 
-    const lastLogDate = format(subDays(new Date(), 3), "yyyy-MM-dd");
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: lastLogDate,
+      testedAt: daysAgoString(3),
     });
 
     const result = await getMyAppsUseCase(tester.id).pipe(runtime.runPromise);
@@ -119,7 +119,7 @@ describe("getMyAppsUseCase", () => {
     expect(result).toHaveLength(1);
     expect(result[0].status).toBe("DROPPED");
     expect(result[0].droppedInfo).toMatchObject({
-      lastLogDate,
+      lastLogDate: daysAgoString(3),
       daysSinceLastLog: 3,
     });
   });
@@ -135,17 +135,20 @@ describe("getMyAppsUseCase", () => {
     const app1 = await appFactoryInstance.create({ developerId: developer.id });
     const app2 = await appFactoryInstance.create({ developerId: developer.id });
 
-    // app1을 먼저 생성
+    const now = Date.now();
+
+    // app1을 먼저 생성 (1초 전)
     await testerFactoryInstance.create({
       applicationId: app1.id,
       testerId: tester.id,
+      createdAt: now - 1000,
     });
 
-    // 약간의 지연 후 app2 생성
-    await new Promise(resolve => setTimeout(resolve, 10));
+    // app2를 나중에 생성 (현재 시간)
     await testerFactoryInstance.create({
       applicationId: app2.id,
       testerId: tester.id,
+      createdAt: now,
     });
 
     const result = await getMyAppsUseCase(tester.id).pipe(runtime.runPromise);

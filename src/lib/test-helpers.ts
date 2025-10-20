@@ -1,7 +1,9 @@
 import { defineFactory } from "@praha/drizzle-factory";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
-import { Layer, ManagedRuntime } from "effect";
+import { Effect, Either, Layer, ManagedRuntime } from "effect";
+import { format, subDays } from "date-fns";
+import { expect } from "vitest";
 
 import type { Database } from "@/db";
 import { DatabaseService } from "@/db";
@@ -23,6 +25,7 @@ export async function createTestDatabase() {
 
 export function createTestRuntime(db: Database) {
   const testLayer = Layer.succeed(DatabaseService, db);
+
   return ManagedRuntime.make(testLayer);
 }
 
@@ -135,3 +138,38 @@ export const testLogFactory = defineFactory({
     testedAt: "2025-01-01",
   }),
 });
+
+export function todayString(): string {
+  return format(new Date(), "yyyy-MM-dd");
+}
+
+export function daysAgoString(days: number): string {
+  return format(subDays(new Date(), days), "yyyy-MM-dd");
+}
+
+export async function createBulkTesters(
+  db: Database,
+  appId: string,
+  count: number,
+): Promise<void> {
+  const userFactoryInstance = usersFactory(db);
+  const testerFactoryInstance = testerFactory(db);
+
+  for (let i = 0; i < count; i++) {
+    const tester = await userFactoryInstance.create();
+    await testerFactoryInstance.create({
+      applicationId: appId,
+      testerId: tester.id,
+    });
+  }
+}
+
+export async function expectEffectError<A, E, R>(
+  effect: Effect.Effect<A, E, R>,
+  runtime: ManagedRuntime.ManagedRuntime<R, never>,
+  expectedError: E,
+): Promise<void> {
+  await expect(effect.pipe(Effect.either, runtime.runPromise)).resolves.toEqual(
+    Either.left(expectedError),
+  );
+}

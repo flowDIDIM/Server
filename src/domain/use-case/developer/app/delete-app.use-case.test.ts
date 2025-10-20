@@ -17,7 +17,7 @@ import {
 import { createAppUseCase } from "./create-app.use-case";
 import { deleteAppUseCase } from "./delete-app.use-case";
 
-describe("deleteAppUseCase", async () => {
+describe("deleteAppUseCase", () => {
   let db: Database;
   let developerId: string;
   let runtime: TestRuntime;

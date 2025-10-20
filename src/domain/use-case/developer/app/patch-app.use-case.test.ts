@@ -18,7 +18,7 @@ import {
 
 import { patchAppUseCase } from "./patch-app.use-case";
 
-describe("editAppUseCase", () => {
+describe("patchAppUseCase", () => {
   let db: Database;
   let app: Application;
   let applicationId: string;
@@ -32,7 +32,10 @@ describe("editAppUseCase", () => {
     appImageFactoryInstance = appImageFactory(db);
 
     app = await appFactoryInstance.create();
-    await appImageFactoryInstance.create(3);
+    // Create 3 images for this specific app
+    for (let i = 0; i < 3; i++) {
+      await appImageFactoryInstance.create({ applicationId: app.id });
+    }
     applicationId = app.id;
     runtime = createTestRuntime(db);
   });

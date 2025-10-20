@@ -6,6 +6,7 @@ import type { TestRuntime } from "@/lib/test-helpers";
 
 import {
   appFactory,
+  createBulkTesters,
   createTestDatabase,
   createTestRuntime,
   testerFactory,
@@ -107,13 +108,7 @@ describe("getRecruitingAppsUseCase", () => {
     });
 
     // app1에 20명의 테스터 추가 (정원)
-    for (let i = 0; i < 20; i++) {
-      const tester = await userFactory.create();
-      await testerFactoryInstance.create({
-        applicationId: app1.id,
-        testerId: tester.id,
-      });
-    }
+    await createBulkTesters(db, app1.id, 20);
 
     const result = await getRecruitingAppsUseCase(1, 10).pipe(
       runtime.runPromise,
@@ -183,14 +178,17 @@ describe("getRecruitingAppsUseCase", () => {
   });
 
   it("최신 순으로 정렬된다", async () => {
+    const now = Date.now();
+
     const app1 = await appFactoryInstance.create({
       developerId: developer.id,
       paymentStatus: "COMPLETED",
+      createdAt: now - 1000,
     });
-    await new Promise(resolve => setTimeout(resolve, 10));
     const app2 = await appFactoryInstance.create({
       developerId: developer.id,
       paymentStatus: "COMPLETED",
+      createdAt: now,
     });
 
     const result = await getRecruitingAppsUseCase(1, 10).pipe(

@@ -1,4 +1,4 @@
-import { beforeEach, afterEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Database } from "@/db";
 import type { User } from "@/db/schema/auth";
@@ -6,6 +6,7 @@ import type { TestRuntime } from "@/lib/test-helpers";
 
 import {
   appFactory,
+  createBulkTesters,
   createTestDatabase,
   createTestRuntime,
   testerFactory,
@@ -32,18 +33,16 @@ describe("getNewestAppsUseCase", () => {
     runtime = createTestRuntime(db);
   });
 
-  afterEach(async () => {
-    db.$client.close();
-  });
-
   it("최신 3개의 앱을 조회한다", async () => {
+    const now = Date.now();
+
     // 5개의 앱 생성
     for (let i = 0; i < 5; i++) {
       await appFactoryInstance.create({
         developerId: developer.id,
         paymentStatus: "COMPLETED",
+        createdAt: now - (5 - i) * 1000,
       });
-      await new Promise(resolve => setTimeout(resolve, 10));
     }
 
     const result = await getNewestAppsUseCase().pipe(runtime.runPromise);
@@ -52,16 +51,19 @@ describe("getNewestAppsUseCase", () => {
   });
 
   it("모집 중인 앱만 조회한다", async () => {
+    const now = Date.now();
+
     await appFactoryInstance.create({
       developerId: developer.id,
       paymentStatus: "COMPLETED",
       status: "ONGOING",
+      createdAt: now - 1000,
     });
-    await new Promise(resolve => setTimeout(resolve, 10));
     await appFactoryInstance.create({
       developerId: developer.id,
       paymentStatus: "COMPLETED",
       status: "COMPLETED",
+      createdAt: now,
     });
 
     const result = await getNewestAppsUseCase().pipe(runtime.runPromise);
@@ -71,14 +73,17 @@ describe("getNewestAppsUseCase", () => {
   });
 
   it("결제가 완료된 앱만 조회한다", async () => {
+    const now = Date.now();
+
     await appFactoryInstance.create({
       developerId: developer.id,
       paymentStatus: "COMPLETED",
+      createdAt: now - 1000,
     });
-    await new Promise(resolve => setTimeout(resolve, 10));
     await appFactoryInstance.create({
       developerId: developer.id,
       paymentStatus: "PENDING",
+      createdAt: now,
     });
 
     const result = await getNewestAppsUseCase().pipe(runtime.runPromise);
@@ -87,24 +92,21 @@ describe("getNewestAppsUseCase", () => {
   });
 
   it("정원이 찬 앱은 제외한다", async () => {
+    const now = Date.now();
+
     const app1 = await appFactoryInstance.create({
       developerId: developer.id,
       paymentStatus: "COMPLETED",
+      createdAt: now - 1000,
     });
-    await new Promise(resolve => setTimeout(resolve, 10));
     const app2 = await appFactoryInstance.create({
       developerId: developer.id,
       paymentStatus: "COMPLETED",
+      createdAt: now,
     });
 
     // app2에 20명의 테스터 추가 (정원)
-    for (let i = 0; i < 20; i++) {
-      const tester = await userFactory.create();
-      await testerFactoryInstance.create({
-        applicationId: app2.id,
-        testerId: tester.id,
-      });
-    }
+    await createBulkTesters(db, app2.id, 20);
 
     const result = await getNewestAppsUseCase().pipe(runtime.runPromise);
 
@@ -134,19 +136,22 @@ describe("getNewestAppsUseCase", () => {
   });
 
   it("생성 날짜가 최신인 순서로 정렬된다", async () => {
+    const now = Date.now();
+
     const app1 = await appFactoryInstance.create({
       developerId: developer.id,
       paymentStatus: "COMPLETED",
+      createdAt: now - 2000,
     });
-    await new Promise(resolve => setTimeout(resolve, 10));
     const app2 = await appFactoryInstance.create({
       developerId: developer.id,
       paymentStatus: "COMPLETED",
+      createdAt: now - 1000,
     });
-    await new Promise(resolve => setTimeout(resolve, 10));
     const app3 = await appFactoryInstance.create({
       developerId: developer.id,
       paymentStatus: "COMPLETED",
+      createdAt: now,
     });
 
     const result = await getNewestAppsUseCase().pipe(runtime.runPromise);
@@ -158,19 +163,21 @@ describe("getNewestAppsUseCase", () => {
   });
 
   it("모집 중인 앱이 3개 미만이면 있는 만큼만 반환한다", async () => {
+    const now = Date.now();
+
     await appFactoryInstance.create({
       developerId: developer.id,
       paymentStatus: "COMPLETED",
+      createdAt: now - 1000,
     });
-    await new Promise(resolve => setTimeout(resolve, 10));
     await appFactoryInstance.create({
       developerId: developer.id,
       paymentStatus: "COMPLETED",
+      createdAt: now,
     });
 
     const result = await getNewestAppsUseCase().pipe(runtime.runPromise);
 
-    console.log(result);
     expect(result).toHaveLength(2);
   });
 });

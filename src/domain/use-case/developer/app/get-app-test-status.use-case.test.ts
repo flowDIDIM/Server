@@ -1,5 +1,4 @@
 import { Effect, Either } from "effect";
-import { format, subDays } from "date-fns";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Database } from "@/db";
@@ -13,8 +12,11 @@ import {
   appFactory,
   createTestDatabase,
   createTestRuntime,
+  daysAgoString,
+  expectEffectError,
   testLogFactory,
   testerFactory,
+  todayString,
   usersFactory,
 } from "@/lib/test-helpers";
 
@@ -81,11 +83,10 @@ describe("getAppTestStatusUseCase", () => {
       testerId: tester.id,
     });
 
-    const today = format(new Date(), "yyyy-MM-dd");
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: today,
+      testedAt: todayString(),
     });
 
     const result = await getAppTestStatusUseCase(app.id, developer.id).pipe(
@@ -108,30 +109,25 @@ describe("getAppTestStatusUseCase", () => {
       testerId: tester.id,
     });
 
-    const today = format(new Date(), "yyyy-MM-dd");
-    const threeDaysAgo = format(subDays(new Date(), 3), "yyyy-MM-dd");
-    const twoDaysAgo = format(subDays(new Date(), 2), "yyyy-MM-dd");
-    const oneDayAgo = format(subDays(new Date(), 1), "yyyy-MM-dd");
-
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: threeDaysAgo,
+      testedAt: daysAgoString(3),
     });
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: twoDaysAgo,
+      testedAt: daysAgoString(2),
     });
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: oneDayAgo,
+      testedAt: daysAgoString(1),
     });
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: today,
+      testedAt: todayString(),
     });
 
     const result = await getAppTestStatusUseCase(app.id, developer.id).pipe(
@@ -154,11 +150,10 @@ describe("getAppTestStatusUseCase", () => {
       testerId: tester.id,
     });
 
-    const tenDaysAgo = format(subDays(new Date(), 10), "yyyy-MM-dd");
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: tenDaysAgo,
+      testedAt: daysAgoString(10),
     });
 
     const result = await getAppTestStatusUseCase(app.id, developer.id).pipe(
@@ -181,24 +176,20 @@ describe("getAppTestStatusUseCase", () => {
       testerId: tester.id,
     });
 
-    const fiveDaysAgo = format(subDays(new Date(), 5), "yyyy-MM-dd");
-    const fourDaysAgo = format(subDays(new Date(), 4), "yyyy-MM-dd");
-    const threeDaysAgo = format(subDays(new Date(), 3), "yyyy-MM-dd");
-
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: fiveDaysAgo,
+      testedAt: daysAgoString(5),
     });
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: fourDaysAgo,
+      testedAt: daysAgoString(4),
     });
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: threeDaysAgo,
+      testedAt: daysAgoString(3),
     });
 
     const result = await getAppTestStatusUseCase(app.id, developer.id).pipe(
@@ -228,19 +219,17 @@ describe("getAppTestStatusUseCase", () => {
     });
 
     // 테스터1: 7일 전 시작
-    const sevenDaysAgo = format(subDays(new Date(), 7), "yyyy-MM-dd");
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester1.id,
-      testedAt: sevenDaysAgo,
+      testedAt: daysAgoString(7),
     });
 
     // 테스터2: 3일 전 시작 (가장 늦게 시작)
-    const threeDaysAgo = format(subDays(new Date(), 3), "yyyy-MM-dd");
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester2.id,
-      testedAt: threeDaysAgo,
+      testedAt: daysAgoString(3),
     });
 
     const result = await getAppTestStatusUseCase(app.id, developer.id).pipe(
@@ -258,11 +247,10 @@ describe("getAppTestStatusUseCase", () => {
       testerId: tester.id,
     });
 
-    const fifteenDaysAgo = format(subDays(new Date(), 15), "yyyy-MM-dd");
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: fifteenDaysAgo,
+      testedAt: daysAgoString(15),
     });
 
     const result = await getAppTestStatusUseCase(app.id, developer.id).pipe(
@@ -273,23 +261,21 @@ describe("getAppTestStatusUseCase", () => {
   });
 
   it("존재하지 않는 앱 조회시 에러를 발생시킨다", async () => {
-    await expect(
-      getAppTestStatusUseCase("non-exist-id", developer.id).pipe(
-        Effect.either,
-        runtime.runPromise,
-      ),
-    ).resolves.toEqual(Either.left(new NotFoundError("Application not found")));
+    await expectEffectError(
+      getAppTestStatusUseCase("non-exist-id", developer.id),
+      runtime,
+      new NotFoundError("Application not found"),
+    );
   });
 
   it("다른 개발자의 앱 조회시 에러를 발생시킨다", async () => {
     const otherDeveloper = await userFactory.create();
 
-    await expect(
-      getAppTestStatusUseCase(app.id, otherDeveloper.id).pipe(
-        Effect.either,
-        runtime.runPromise,
-      ),
-    ).resolves.toEqual(Either.left(new UnauthorizedError()));
+    await expectEffectError(
+      getAppTestStatusUseCase(app.id, otherDeveloper.id),
+      runtime,
+      new UnauthorizedError(),
+    );
   });
 
   it("여러 테스터의 상태를 동시에 조회한다", async () => {
@@ -310,21 +296,18 @@ describe("getAppTestStatusUseCase", () => {
       testerId: tester3.id,
     });
 
-    const today = format(new Date(), "yyyy-MM-dd");
-    const threeDaysAgo = format(subDays(new Date(), 3), "yyyy-MM-dd");
-
     // 테스터1: 오늘 시작, 완료
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester1.id,
-      testedAt: today,
+      testedAt: todayString(),
     });
 
     // 테스터2: 3일 전 시작, 1일차만 완료 (이탈)
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester2.id,
-      testedAt: threeDaysAgo,
+      testedAt: daysAgoString(3),
     });
 
     // 테스터3: 시작 안함

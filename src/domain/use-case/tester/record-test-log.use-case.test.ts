@@ -1,4 +1,4 @@
-import { format, subDays } from "date-fns";
+import { and, eq } from "drizzle-orm";
 import { Effect, Either } from "effect";
 import { beforeEach, describe, expect, it } from "vitest";
 
@@ -14,13 +14,14 @@ import {
   appFactory,
   createTestDatabase,
   createTestRuntime,
+  daysAgoString,
   testerFactory,
   testLogFactory,
+  todayString,
   usersFactory,
 } from "@/lib/test-helpers";
 
 import { recordTestLogUseCase } from "./record-test-log.use-case";
-import { and, eq } from "drizzle-orm";
 
 describe("recordTestLogUseCase", () => {
   let db: Database;
@@ -61,14 +62,13 @@ describe("recordTestLogUseCase", () => {
       runtime.runPromise,
     );
 
-    const today = format(new Date(), "yyyy-MM-dd");
     // 10,000원 * 0.8 (수수료 20% 제외) / 20명 = 400원/인, 1일차 = 400 * 0.05 = 20원
     const expectedPoints = Math.floor((10000 * 0.8 / 20) * 0.05);
 
     expect(result).toMatchObject({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: today,
+      testedAt: todayString(),
       earnedPoints: expectedPoints,
     });
 
@@ -77,7 +77,7 @@ describe("recordTestLogUseCase", () => {
         and(
           eq(testLogTable.applicationId, app.id),
           eq(testLogTable.testerId, tester.id),
-          eq(testLogTable.testedAt, today),
+          eq(testLogTable.testedAt, todayString()),
         ),
     });
 
@@ -140,14 +140,11 @@ describe("recordTestLogUseCase", () => {
   });
 
   it("다른 날짜에는 기록할 수 있다", async () => {
-    const yesterday = format(subDays(new Date(), 1), "yyyy-MM-dd");
-    const today = format(new Date(), "yyyy-MM-dd");
-
     // 어제 기록
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: yesterday,
+      testedAt: daysAgoString(1),
     });
 
     // 오늘 기록
@@ -155,7 +152,7 @@ describe("recordTestLogUseCase", () => {
       runtime.runPromise,
     );
 
-    expect(result.testedAt).toBe(today);
+    expect(result.testedAt).toBe(todayString());
 
     const allLogs = await db.query.testLogTable.findMany({
       where: (testLogTable, { and, eq }) =>
@@ -181,8 +178,6 @@ describe("recordTestLogUseCase", () => {
       testerId: tester3.id,
     });
 
-    const today = format(new Date(), "yyyy-MM-dd");
-
     const result1 = await recordTestLogUseCase(app.id, tester.id).pipe(
       runtime.runPromise,
     );
@@ -201,7 +196,7 @@ describe("recordTestLogUseCase", () => {
       where: (testLogTable, { and, eq }) =>
         and(
           eq(testLogTable.applicationId, app.id),
-          eq(testLogTable.testedAt, today),
+          eq(testLogTable.testedAt, todayString()),
         ),
     });
 
@@ -235,32 +230,27 @@ describe("recordTestLogUseCase", () => {
   });
 
   it("연속된 날짜에 기록하면 포인트가 누적된다", async () => {
-    const threeDaysAgo = format(subDays(new Date(), 3), "yyyy-MM-dd");
-    const twoDaysAgo = format(subDays(new Date(), 2), "yyyy-MM-dd");
-    const yesterday = format(subDays(new Date(), 1), "yyyy-MM-dd");
-    const today = format(new Date(), "yyyy-MM-dd");
-
     const pricePerPerson = (10000 * 0.8) / 20; // 400원 (수수료 20% 제외)
 
     // 1일차: 400 * 0.05 = 20원
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: threeDaysAgo,
+      testedAt: daysAgoString(3),
       earnedPoints: Math.floor(pricePerPerson * 0.05),
     });
     // 2일차: 400 * 0.05 = 20원
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: twoDaysAgo,
+      testedAt: daysAgoString(2),
       earnedPoints: Math.floor(pricePerPerson * 0.05),
     });
     // 3일차: 400 * 0.06 = 24원
     await testLogFactoryInstance.create({
       applicationId: app.id,
       testerId: tester.id,
-      testedAt: yesterday,
+      testedAt: daysAgoString(1),
       earnedPoints: Math.floor(pricePerPerson * 0.06),
     });
 
@@ -281,7 +271,7 @@ describe("recordTestLogUseCase", () => {
       runtime.runPromise,
     );
 
-    expect(result.testedAt).toBe(today);
+    expect(result.testedAt).toBe(todayString());
     // 4일차: 400 * 0.06 = 24원
     const fourthDayPoints = Math.floor(pricePerPerson * 0.06);
     expect(result.earnedPoints).toBe(fourthDayPoints);

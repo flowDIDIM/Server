@@ -3,9 +3,9 @@ import { beforeEach, describe, expect, it } from "vitest";
 import type { Database } from "@/db";
 import type { User } from "@/db/schema/auth";
 import type { TestRuntime } from "@/lib/test-helpers";
-
 import {
   appFactory,
+  createBulkTesters,
   createTestDatabase,
   createTestRuntime,
   testerFactory,
@@ -60,41 +60,23 @@ describe("getAlmostFullAppsUseCase", () => {
       paymentStatus: "COMPLETED",
     });
 
-    // app1에 15명 추가
-    for (let i = 0; i < 15; i++) {
-      const tester = await userFactory.create();
-      await testerFactoryInstance.create({
-        applicationId: app1.id,
-        testerId: tester.id,
-      });
-    }
+    // app1에 5명 추가
+    await createBulkTesters(db, app1.id, 5);
 
     // app2에 10명 추가
-    for (let i = 0; i < 10; i++) {
-      const tester = await userFactory.create();
-      await testerFactoryInstance.create({
-        applicationId: app2.id,
-        testerId: tester.id,
-      });
-    }
+    await createBulkTesters(db, app2.id, 10);
 
-    // app3에 5명 추가
-    for (let i = 0; i < 5; i++) {
-      const tester = await userFactory.create();
-      await testerFactoryInstance.create({
-        applicationId: app3.id,
-        testerId: tester.id,
-      });
-    }
+    // app3에 15명 추가
+    await createBulkTesters(db, app3.id, 15);
 
     const result = await getAlmostFullAppsUseCase().pipe(runtime.runPromise);
 
     expect(result).toHaveLength(3);
-    expect(result[0].id).toBe(app1.id); // 15명
+    expect(result[0].id).toBe(app3.id); // 15명
     expect(result[0].testerCount).toBe(15);
     expect(result[1].id).toBe(app2.id); // 10명
     expect(result[1].testerCount).toBe(10);
-    expect(result[2].id).toBe(app3.id); // 5명
+    expect(result[2].id).toBe(app1.id); // 5명
     expect(result[2].testerCount).toBe(5);
   });
 
@@ -109,22 +91,10 @@ describe("getAlmostFullAppsUseCase", () => {
     });
 
     // app1에 20명의 테스터 추가 (정원)
-    for (let i = 0; i < 20; i++) {
-      const tester = await userFactory.create();
-      await testerFactoryInstance.create({
-        applicationId: app1.id,
-        testerId: tester.id,
-      });
-    }
+    await createBulkTesters(db, app1.id, 20);
 
     // app2에 15명의 테스터 추가
-    for (let i = 0; i < 15; i++) {
-      const tester = await userFactory.create();
-      await testerFactoryInstance.create({
-        applicationId: app2.id,
-        testerId: tester.id,
-      });
-    }
+    await createBulkTesters(db, app2.id, 15);
 
     const result = await getAlmostFullAppsUseCase().pipe(runtime.runPromise);
 
