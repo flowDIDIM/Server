@@ -8,6 +8,7 @@ import { createAppUseCase } from "@/domain/use-case/developer/app/create-app.use
 import { createAppCompletedUseCase } from "@/domain/use-case/developer/app/create-app-completed.use-case";
 import { PaymentWebhookSchema } from "@/domain/schema/payment-webhook";
 import { processPaymentWebhookUseCase } from "@/domain/use-case/developer/payment/process-payment-webhook.use-case";
+import { getPaymentHistoryUseCase } from "@/domain/use-case/developer/payment/get-payment-history.use-case";
 import { env } from "@/lib/env";
 import { HttpError } from "@/domain/error/http-error";
 
@@ -90,6 +91,21 @@ const paymentRoute = createApp()
     const webhook = c.req.valid("json");
 
     const result = await processPaymentWebhookUseCase(webhook).pipe(runAsApp);
+
+    if ("error" in result) {
+      return c.json({ error: result.error }, result.status);
+    }
+
+    return c.json(result);
+  })
+
+  .get("/history", async c => {
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    const result = await getPaymentHistoryUseCase(user.id).pipe(runAsApp);
 
     if ("error" in result) {
       return c.json({ error: result.error }, result.status);

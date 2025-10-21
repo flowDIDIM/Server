@@ -118,8 +118,11 @@ export const getAppTestStatusUseCase = Effect.fn("getAppTestStatusUseCase")(
         }
 
         return {
+          id: application.id,
+          name: application.name,
           status: application.status,
           progress,
+          testerCount: testers.length,
           testers: mappedTesters,
         };
       }),
