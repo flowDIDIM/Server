@@ -30,3 +30,4 @@ lerna-debug.log*
 
 local.db
 src/pad.ts
+dist
