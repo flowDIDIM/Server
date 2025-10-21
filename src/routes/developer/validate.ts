@@ -49,7 +49,7 @@ const validateRoute = createApp()
     );
 
     if ("error" in result) {
-      return c.json({ error: result.error }, result.status);
+      return c.json({ error: result.error, _tag: result._tag }, result.status);
     }
 
     return c.json(result);
