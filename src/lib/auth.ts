@@ -1,5 +1,5 @@
 import { expo } from "@better-auth/expo";
-import { betterAuth } from "better-auth";
+import { betterAuth, BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
 import { db } from "@/db";
@@ -11,6 +11,8 @@ import {
 } from "@/db/schema";
 import { env } from "@/lib/env";
 
+type DBAdapter = ReturnType<typeof drizzleAdapter>;
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "sqlite",
@@ -20,7 +22,7 @@ export const auth = betterAuth({
       account: accountTable,
       verification: verificationTable,
     },
-  }),
+  }) as DBAdapter,
   plugins: [expo()],
   socialProviders: {
     google: {

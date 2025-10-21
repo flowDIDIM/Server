@@ -8,6 +8,7 @@ import healthRoute from "@/routes/health";
 import testerRoute from "@/routes/tester";
 import { authCors } from "@/lib/middleware/auth";
 import { handleHonoError } from "@/lib/error-handler";
+import { hc } from "hono/client";
 
 export interface AppEnv {
   Variables: {
@@ -27,3 +28,6 @@ const app = createApp()
 export default app;
 
 export type AppType = typeof app;
+export type Client = ReturnType<typeof hc<typeof app>>;
+export const hcWithType = (...args: Parameters<typeof hc>): Client =>
+  hc<typeof app>(...args);
