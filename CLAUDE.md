@@ -82,10 +82,18 @@ The codebase uses Effect-TS for:
 
 ```typescript
 const result = await useCase(params).pipe(runAsApp);
+
+if ("error" in result) {
+  return c.json({ error: result.error }, result.status);
+}
+
 return c.json(result);
 ```
 
-**Important**: Do NOT use `Effect.either` in routes. The global error handler (`handleHonoError` in `src/lib/error-handler.ts`) automatically catches and handles all errors thrown by Effect-TS, converting `HttpError` instances to appropriate HTTP responses.
+**Important**:
+- Always check if `result` contains an error field and return it with the appropriate status code
+- Do NOT use `Effect.either` in routes
+- The global error handler (`handleHonoError` in `src/lib/error-handler.ts`) also catches unhandled errors from Effect-TS
 
 #### Domain Layer (`src/domain/`)
 
@@ -118,7 +126,7 @@ Structured in three layers:
 - Uses better-auth with Expo plugin for mobile support
 - Google OAuth configured via environment variables
 - Auth middleware (`src/lib/middleware/auth.ts`) injects `user` and `session` into context
-- Protected routes check `c.get("user")` for authentication
+- Protected routes check `c.get("user")` for authentication and return `{ error: "Unauthorized" }` with 401 status if not authenticated
 
 #### Environment Variables (`src/lib/env.ts`)
 
@@ -142,8 +150,23 @@ TypeScript is configured with `@/*` mapping to `src/*`.
 2. Define schemas in `src/db/schema/` or `src/domain/schema/`
 3. Create route file in `src/routes/`
 4. Use `validator` from hono-openapi for request validation
-5. Execute use case with `runAsApp` (do NOT use `Effect.either`)
-6. Return result directly with `c.json(result)` - errors are handled automatically by `handleHonoError`
+5. Check authentication if needed:
+   ```typescript
+   const user = c.get("user");
+   if (!user) {
+     return c.json({ error: "Unauthorized" }, 401);
+   }
+   ```
+6. Execute use case with `runAsApp` and check for errors:
+   ```typescript
+   const result = await useCase(params).pipe(runAsApp);
+
+   if ("error" in result) {
+     return c.json({ error: result.error }, result.status);
+   }
+
+   return c.json(result);
+   ```
 
 ### Adding a Database Table
 
@@ -211,5 +234,14 @@ await testerFactory(db)
 
 - Use `HttpError` from `src/domain/error/http-error.ts` for HTTP errors with status codes
 - Use `mapHttpError` helper from `src/lib/effect.ts` to convert Promise rejections to HttpError
-- Errors are automatically handled by `handleHonoError` in routes - no need to use `Effect.either` or manual error handling
-- The error handler converts `HttpError` instances to appropriate HTTP responses with status codes
+- **Always check `runAsApp` results for errors**: After calling `runAsApp`, check if the result contains an `error` field:
+  ```typescript
+  const result = await useCase(params).pipe(runAsApp);
+
+  if ("error" in result) {
+    return c.json({ error: result.error }, result.status);
+  }
+  ```
+- **Standardized error responses**: All error responses use the format `{ error: "message" }` with appropriate HTTP status codes
+- **Authentication errors**: Return `{ error: "Unauthorized" }` with 401 status when user is not authenticated
+- The global error handler (`handleHonoError`) also catches unhandled errors from Effect-TS, but explicit error checking is preferred

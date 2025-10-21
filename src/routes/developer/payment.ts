@@ -31,19 +31,21 @@ const paymentRoute = createApp()
     async c => {
       const user = c.get("user");
       if (!user) {
-        return c.json({ message: "Unauthorized" }, 401);
+        return c.json({ error: "Unauthorized" }, 401);
       }
 
       const input = c.req.valid("json");
 
       // Demo mode: create application with COMPLETED payment status
       if (env.PAYMENT_DEMO) {
-        const application = await runAsApp(
-          createAppCompletedUseCase({
-            ...input.application,
-            developerId: user.id,
-          }),
-        );
+        const application = await createAppCompletedUseCase({
+          ...input.application,
+          developerId: user.id,
+        }).pipe(runAsApp);
+
+        if ("error" in application) {
+          return c.json({ error: application.error }, application.status);
+        }
 
         return c.json({
           applicationId: application.id,
@@ -58,12 +60,16 @@ const paymentRoute = createApp()
         developerId: user.id,
       }).pipe(runAsApp);
 
+      if ("error" in application) {
+        return c.json({ error: application.error }, application.status);
+      }
+
       if (
         Object.keys(PAYMENT_URL_MAP).indexOf(input.amount.toString()) === -1
       ) {
         return c.json(
           {
-            message: `Invalid payment amount. Available presets: ${Object.keys(PAYMENT_URL_MAP).join(", ")}`,
+            error: `Invalid payment amount. Available presets: ${Object.keys(PAYMENT_URL_MAP).join(", ")}`,
           },
           400,
         );
@@ -83,7 +89,11 @@ const paymentRoute = createApp()
   .post("/webhook", validator("json", PaymentWebhookSchema), async c => {
     const webhook = c.req.valid("json");
 
-    const result = await runAsApp(processPaymentWebhookUseCase(webhook));
+    const result = await processPaymentWebhookUseCase(webhook).pipe(runAsApp);
+
+    if ("error" in result) {
+      return c.json({ error: result.error }, result.status);
+    }
 
     return c.json(result);
   });

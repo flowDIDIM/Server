@@ -7,7 +7,7 @@ import { BadRequestError } from "@/domain/error/bad-request-error";
 import { NotFoundError } from "@/domain/error/not-found-error";
 import { UnauthorizedError } from "@/domain/error/unauthorized-error";
 import { env } from "@/lib/env";
-import { DatabaseError } from "@/db/errors";
+import { DatabaseError } from "@/domain/error/database-error";
 import { FeedbackSchema } from "@/domain/schema/payment/payment-feedback";
 
 export const validatePayappFeedbackUseCase = Effect.fn(

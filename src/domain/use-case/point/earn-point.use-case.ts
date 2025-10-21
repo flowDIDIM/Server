@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { Effect } from "effect";
 
 import { DatabaseService } from "@/db";
-import { DatabaseError } from "@/db/errors";
+import { DatabaseError } from "@/domain/error/database-error";
 import { pointHistoryTable, userPointTable } from "@/db/schema/point";
 
 interface EarnPointInput {

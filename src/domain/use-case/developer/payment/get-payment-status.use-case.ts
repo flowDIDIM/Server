@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { Effect } from "effect";
 
 import { DatabaseService } from "@/db";
-import { DatabaseError } from "@/db/errors";
+import { DatabaseError } from "@/domain/error/database-error";
 import { paymentHistoryTable } from "@/db/schema/payment";
 import { NotFoundError } from "@/domain/error/not-found-error";
 import { mapHttpError } from "@/lib/effect";

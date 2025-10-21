@@ -10,6 +10,7 @@ import { isValidPackageNameUseCase } from "@/domain/use-case/store/is-valid-pack
 import { validateTestTrackUseCase } from "@/domain/use-case/store/validate-test-track.use-case";
 import { createApp } from "@/lib/create-app";
 import { runAsApp } from "@/lib/runtime";
+import { mapHttpError } from "@/lib/effect";
 
 const PackageValidationSchema = z.object({
   packageName: z.string().min(1, "Package name is required"),
@@ -26,7 +27,7 @@ const validateRoute = createApp()
     const user = c.get("user");
 
     if (!user) {
-      return c.json({ message: "Unauthorized" }, 401);
+      return c.json({ error: "Unauthorized" }, 401);
     }
 
     const result = await Effect.gen(function* () {
@@ -43,8 +44,13 @@ const validateRoute = createApp()
         HttpClient.HttpClient,
         createGoogleHttpClientUseCase(user.id),
       ),
+      mapHttpError,
       runAsApp,
     );
+
+    if ("error" in result) {
+      return c.json({ error: result.error }, result.status);
+    }
 
     return c.json(result);
   })
@@ -53,7 +59,7 @@ const validateRoute = createApp()
     const user = c.get("user");
 
     if (!user) {
-      return c.json({ message: "Unauthorized" }, 401);
+      return c.json({ error: "Unauthorized" }, 401);
     }
 
     const result = await Effect.gen(function* () {
@@ -74,8 +80,13 @@ const validateRoute = createApp()
         HttpClient.HttpClient,
         createGoogleHttpClientUseCase(user.id),
       ),
+      mapHttpError,
       runAsApp,
     );
+
+    if ("error" in result) {
+      return c.json({ error: result.error }, result.status);
+    }
 
     return c.json(result);
   });

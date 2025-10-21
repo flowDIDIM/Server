@@ -7,7 +7,6 @@ import developerRoute from "@/routes/developer";
 import healthRoute from "@/routes/health";
 import testerRoute from "@/routes/tester";
 import { authCors } from "@/lib/middleware/auth";
-import { handleHonoError } from "@/lib/error-handler";
 import { hc } from "hono/client";
 
 export interface AppEnv {
@@ -23,7 +22,11 @@ const app = createApp()
   .route("/health", healthRoute)
   .route("/developer", developerRoute)
   .route("/tester", testerRoute)
-  .onError(handleHonoError);
+  .onError((error, c) => {
+    console.error("Unhandled error:", error);
+    return c.json({ error: "Internal Server Error" }, 500);
+  })
+  .notFound(c => c.json({ error: "Not Found" }, 404));
 
 export default app;
 

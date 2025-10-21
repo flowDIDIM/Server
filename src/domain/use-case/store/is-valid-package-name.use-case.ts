@@ -4,7 +4,7 @@ import { EditsService } from "@/google/service/edits.service";
 import { DatabaseService } from "@/db";
 import { applicationTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { DatabaseError } from "@/db/errors";
+import { DatabaseError } from "@/domain/error/database-error";
 
 export const isValidPackageNameUseCase = Effect.fn("isValidPackageNameUseCase")(
   function* (packageName: string) {

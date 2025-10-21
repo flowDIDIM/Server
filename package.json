@@ -12,7 +12,8 @@
     "cloudflare:tunnel": "cloudflared tunnel run localhost",
     "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "build-type": "tsdown"
   },
   "dependencies": {
     "@better-auth/expo": "^1.3.27",

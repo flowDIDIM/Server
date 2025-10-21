@@ -13,25 +13,33 @@ const appRoute = createApp()
   .get("/", async c => {
     const user = c.get("user");
     if (!user) {
-      return c.json({ message: "Unauthorized" }, 401);
+      return c.json({ error: "Unauthorized" }, 401);
     }
 
-    const apps = await getAppsUseCase(user.id).pipe(runAsApp);
+    const result = await getAppsUseCase(user.id).pipe(runAsApp);
+
+    if ("error" in result) {
+      return c.json({ error: result.error }, result.status);
+    }
 
     return c.json({
-      apps,
+      apps: result,
     });
   })
   .get("/:id", async c => {
     const user = c.get("user");
     if (!user) {
-      return c.json({ message: "Unauthorized" }, 401);
+      return c.json({ error: "Unauthorized" }, 401);
     }
     const applicationId = c.req.param("id");
 
     const result = await getAppTestStatusUseCase(applicationId, user.id).pipe(
       runAsApp,
     );
+
+    if ("error" in result) {
+      return c.json({ error: result.error }, result.status);
+    }
 
     return c.json(result);
   })
@@ -48,7 +56,7 @@ const appRoute = createApp()
     async c => {
       const user = c.get("user");
       if (!user) {
-        return c.json({ message: "Unauthorized" }, 401);
+        return c.json({ error: "Unauthorized" }, 401);
       }
       const applicationId = c.req.param("id");
       const input = c.req.valid("json");
@@ -57,19 +65,27 @@ const appRoute = createApp()
         runAsApp,
       );
 
+      if ("error" in result) {
+        return c.json({ error: result.error }, result.status);
+      }
+
       return c.json(result);
     },
   )
   .delete("/:id", async c => {
     const user = c.get("user");
     if (!user) {
-      return c.json({ message: "Unauthorized" }, 401);
+      return c.json({ error: "Unauthorized" }, 401);
     }
     const applicationId = c.req.param("id");
 
     const result = await deleteAppUseCase(applicationId, user.id).pipe(
       runAsApp,
     );
+
+    if ("error" in result) {
+      return c.json({ error: result.error }, result.status);
+    }
 
     return c.json(result);
   });

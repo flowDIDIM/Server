@@ -7,6 +7,8 @@ import { ImageService } from "@/google/service/image.service";
 import { ListingService } from "@/google/service/listing.service";
 import { TestersService } from "@/google/service/testers.service";
 import { TracksService } from "@/google/service/tracks.service";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+import type { HttpError } from "@/domain/error/http-error";
 
 const AppLayer = Layer.empty.pipe(
   Layer.provideMerge(DatabaseLayer),
@@ -24,11 +26,22 @@ type ProvidedRequirements = Layer.Layer.Success<typeof AppLayer>;
 
 export function runAsApp<
   A,
-  E,
+  E extends HttpError,
   R extends ProvidedRequirements = ProvidedRequirements,
 >(effect: Effect.Effect<A, E, R>) {
   return effect.pipe(
     Effect.tapDefect(ex => Effect.logError(ex)),
+
+    Effect.catchAll(error =>
+      Effect.succeed({
+        error: error.message,
+        status: error.status as ContentfulStatusCode,
+      } as const),
+    ),
+    Effect.catchAllDefect(defect =>
+      Effect.succeed({ error: String(defect), status: 500 } as const),
+    ),
+
     appRuntime.runPromise,
   );
 }

@@ -26,7 +26,7 @@ const testerRoute = createApp()
     async c => {
       const user = c.get("user");
       if (!user) {
-        return c.json({ message: "Unauthorized" }, 401);
+        return c.json({ error: "Unauthorized" }, 401);
       }
 
       const { applicationId } = c.req.valid("json");
@@ -34,6 +34,10 @@ const testerRoute = createApp()
       const result = await joinAppTestUseCase(applicationId, user.id).pipe(
         runAsApp,
       );
+
+      if ("error" in result) {
+        return c.json({ error: result.error }, result.status);
+      }
 
       return c.json(result, 201);
     },
@@ -49,7 +53,7 @@ const testerRoute = createApp()
     async c => {
       const user = c.get("user");
       if (!user) {
-        return c.json({ message: "Unauthorized" }, 401);
+        return c.json({ error: "Unauthorized" }, 401);
       }
 
       const { applicationId } = c.req.valid("json");
@@ -58,16 +62,24 @@ const testerRoute = createApp()
         runAsApp,
       );
 
+      if ("error" in result) {
+        return c.json({ error: result.error }, result.status);
+      }
+
       return c.json(result, 201);
     },
   )
   .get("/my-apps", async c => {
     const user = c.get("user");
     if (!user) {
-      return c.json({ message: "Unauthorized" }, 401);
+      return c.json({ error: "Unauthorized" }, 401);
     }
 
     const result = await getMyAppsUseCase(user.id).pipe(runAsApp);
+
+    if ("error" in result) {
+      return c.json({ error: result.error }, result.status);
+    }
 
     return c.json(result);
   })
@@ -87,36 +99,56 @@ const testerRoute = createApp()
         runAsApp,
       );
 
+      if ("error" in result) {
+        return c.json({ error: result.error }, result.status);
+      }
+
       return c.json(result);
     },
   )
   .get("/apps/newest", async c => {
     const result = await getNewestAppsUseCase().pipe(runAsApp);
 
+    if ("error" in result) {
+      return c.json({ error: result.error }, result.status);
+    }
+
     return c.json(result);
   })
   .get("/apps/almost-full", async c => {
     const result = await getAlmostFullAppsUseCase().pipe(runAsApp);
+
+    if ("error" in result) {
+      return c.json({ error: result.error }, result.status);
+    }
 
     return c.json(result);
   })
   .get("/me", async c => {
     const user = c.get("user");
     if (!user) {
-      return c.json({ message: "Unauthorized" }, 401);
+      return c.json({ error: "Unauthorized" }, 401);
     }
 
     const result = await getUserInfoUseCase(user.id).pipe(runAsApp);
+
+    if ("error" in result) {
+      return c.json({ error: result.error }, result.status);
+    }
 
     return c.json(result);
   })
   .get("/point-history", async c => {
     const user = c.get("user");
     if (!user) {
-      return c.json({ message: "Unauthorized" }, 401);
+      return c.json({ error: "Unauthorized" }, 401);
     }
 
     const result = await getPointHistoryUseCase(user.id).pipe(runAsApp);
+
+    if ("error" in result) {
+      return c.json({ error: result.error }, result.status);
+    }
 
     return c.json(result);
   })
@@ -136,16 +168,24 @@ const testerRoute = createApp()
         runAsApp,
       );
 
+      if ("error" in result) {
+        return c.json({ error: result.error }, result.status);
+      }
+
       return c.json(result);
     },
   )
   .get("/incomplete-tests", async c => {
     const user = c.get("user");
     if (!user) {
-      return c.json({ message: "Unauthorized" }, 401);
+      return c.json({ error: "Unauthorized" }, 401);
     }
 
     const result = await getIncompleteTestsUseCase(user.id).pipe(runAsApp);
+
+    if ("error" in result) {
+      return c.json({ error: result.error }, result.status);
+    }
 
     return c.json(result);
   });

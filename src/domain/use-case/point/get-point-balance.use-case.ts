@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { Effect } from "effect";
 
 import { DatabaseService } from "@/db";
-import { DatabaseError } from "@/db/errors";
+import { DatabaseError } from "@/domain/error/database-error";
 import { userPointTable } from "@/db/schema/point";
 
 export const getPointBalanceUseCase = Effect.fn("getPointBalanceUseCase")(

@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { Effect } from "effect";
 
 import { DatabaseService } from "@/db";
-import { DatabaseError } from "@/db/errors";
+import { DatabaseError } from "@/domain/error/database-error";
 import { gifticonProductTable } from "@/db/schema/gifticon";
 
 export const getGifticonProductsUseCase = Effect.fn(

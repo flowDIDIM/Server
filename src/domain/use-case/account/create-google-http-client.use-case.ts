@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { Data, Effect } from "effect";
 
 import { DatabaseService } from "@/db";
-import { DatabaseError } from "@/db/errors";
+import { DatabaseError } from "@/domain/error/database-error";
 import { accountTable } from "@/db/schema";
 
 const ANDROID_PUBLISHER_SCOPE =
