@@ -7,6 +7,10 @@ import { getMyAppsUseCase } from "@/domain/use-case/tester/get-my-apps.use-case"
 import { getRecruitingAppsUseCase } from "@/domain/use-case/tester/get-recruiting-apps.use-case";
 import { getNewestAppsUseCase } from "@/domain/use-case/tester/get-newest-apps.use-case";
 import { getAlmostFullAppsUseCase } from "@/domain/use-case/tester/get-almost-full-apps.use-case";
+import { getUserInfoUseCase } from "@/domain/use-case/tester/get-user-info.use-case";
+import { getPointHistoryUseCase } from "@/domain/use-case/tester/get-point-history.use-case";
+import { getAppDetailUseCase } from "@/domain/use-case/tester/get-app-detail.use-case";
+import { getIncompleteTestsUseCase } from "@/domain/use-case/tester/get-incomplete-tests.use-case";
 import { createApp } from "@/lib/create-app";
 import { runAsApp } from "@/lib/runtime";
 
@@ -93,6 +97,55 @@ const testerRoute = createApp()
   })
   .get("/apps/almost-full", async c => {
     const result = await getAlmostFullAppsUseCase().pipe(runAsApp);
+
+    return c.json(result);
+  })
+  .get("/me", async c => {
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ message: "Unauthorized" }, 401);
+    }
+
+    const result = await getUserInfoUseCase(user.id).pipe(runAsApp);
+
+    return c.json(result);
+  })
+  .get("/point-history", async c => {
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ message: "Unauthorized" }, 401);
+    }
+
+    const result = await getPointHistoryUseCase(user.id).pipe(runAsApp);
+
+    return c.json(result);
+  })
+  .get(
+    "/apps/:id",
+    validator(
+      "param",
+      z.object({
+        id: z.string(),
+      }),
+    ),
+    async c => {
+      const user = c.get("user");
+      const { id } = c.req.valid("param");
+
+      const result = await getAppDetailUseCase(id, user?.id ?? null).pipe(
+        runAsApp,
+      );
+
+      return c.json(result);
+    },
+  )
+  .get("/incomplete-tests", async c => {
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ message: "Unauthorized" }, 401);
+    }
+
+    const result = await getIncompleteTestsUseCase(user.id).pipe(runAsApp);
 
     return c.json(result);
   });

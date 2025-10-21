@@ -62,5 +62,9 @@ export const pointHistoryRelations = relations(
       fields: [pointHistoryTable.userId],
       references: [userTable.id],
     }),
+    application: one(applicationTable, {
+      fields: [pointHistoryTable.relatedApplicationId],
+      references: [applicationTable.id],
+    }),
   }),
 );
