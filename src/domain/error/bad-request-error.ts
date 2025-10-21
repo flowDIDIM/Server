@@ -1,7 +1,7 @@
-import { HttpError } from "@/domain/error/http-error";
+import { makeHttpError } from "@/domain/error/http-error";
 
-export class BadRequestError extends HttpError {
-  constructor(message: string = "Bad request", cause?: unknown) {
-    super(400, message, cause);
-  }
-}
+export class BadRequestError extends makeHttpError(
+  "BadRequestError",
+  400,
+  "Bad request",
+) {}

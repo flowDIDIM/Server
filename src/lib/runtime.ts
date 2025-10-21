@@ -7,7 +7,11 @@ import { ImageService } from "@/google/service/image.service";
 import { ListingService } from "@/google/service/listing.service";
 import { TestersService } from "@/google/service/testers.service";
 import { TracksService } from "@/google/service/tracks.service";
-import type { ContentfulStatusCode } from "hono/utils/http-status";
+import type {
+  ClientErrorStatusCode,
+  ContentfulStatusCode,
+  ServerErrorStatusCode,
+} from "hono/utils/http-status";
 import type { HttpError } from "@/domain/error/http-error";
 
 const AppLayer = Layer.empty.pipe(
@@ -23,6 +27,7 @@ const AppLayer = Layer.empty.pipe(
 const appRuntime = ManagedRuntime.make(AppLayer);
 
 type ProvidedRequirements = Layer.Layer.Success<typeof AppLayer>;
+type ErrorStatusCode = ServerErrorStatusCode | ClientErrorStatusCode;
 
 export function runAsApp<
   A,
@@ -35,11 +40,16 @@ export function runAsApp<
     Effect.catchAll(error =>
       Effect.succeed({
         error: error.message,
-        status: error.status as ContentfulStatusCode,
+        status: error.status as ErrorStatusCode,
+        _tag: error._tag,
       } as const),
     ),
     Effect.catchAllDefect(defect =>
-      Effect.succeed({ error: String(defect), status: 500 } as const),
+      Effect.succeed({
+        error: String(defect),
+        status: 500 as ErrorStatusCode,
+        _tag: "InternalServerError",
+      } as const),
     ),
 
     appRuntime.runPromise,

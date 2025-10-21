@@ -1,7 +1,7 @@
-import { HttpError } from "@/domain/error/http-error";
+import { makeHttpError } from "@/domain/error/http-error";
 
-export class ConflictError extends HttpError {
-  constructor(message: string = "Resource conflict", cause?: unknown) {
-    super(409, message, cause);
-  }
-}
+export class ConflictError extends makeHttpError(
+  "ConflictError",
+  409,
+  "Resource conflict",
+) {}

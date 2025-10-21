@@ -3,9 +3,9 @@ import { and, desc, eq } from "drizzle-orm";
 
 import type { PaymentWebhook } from "@/domain/schema/payment-webhook";
 import { DatabaseService } from "@/db";
-import { HttpError } from "@/domain/error/http-error";
 import { applicationTable, userTable, webhookHistoryTable } from "@/db/schema";
 import { mapHttpError } from "@/lib/effect";
+import { NotFoundError } from "@/domain/error/not-found-error";
 
 export const processPaymentWebhookUseCase = (webhook: PaymentWebhook) => {
   return Effect.gen(function* () {
@@ -30,8 +30,7 @@ export const processPaymentWebhookUseCase = (webhook: PaymentWebhook) => {
         });
 
         if (!user) {
-          throw new HttpError(
-            404,
+          throw new NotFoundError(
             `User not found with email: ${webhook.payment.email}`,
           );
         }
@@ -46,8 +45,7 @@ export const processPaymentWebhookUseCase = (webhook: PaymentWebhook) => {
         });
 
         if (!application) {
-          throw new HttpError(
-            404,
+          throw new NotFoundError(
             `No pending application found for user: ${webhook.payment.email}`,
           );
         }

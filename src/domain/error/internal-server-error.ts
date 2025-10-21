@@ -1,7 +1,7 @@
-import { HttpError } from "@/domain/error/http-error";
+import { makeHttpError } from "@/domain/error/http-error";
 
-export class InternalServerError extends HttpError {
-  constructor(message: string = "Internal server error", cause?: unknown) {
-    super(500, message, cause);
-  }
-}
+export class InternalServerError extends makeHttpError(
+  "InternalServerError",
+  500,
+  "Internal server error occurred",
+) {}
